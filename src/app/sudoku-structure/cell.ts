@@ -1,7 +1,7 @@
 import { Observable, Subject, ReplaySubject, BehaviorSubject } from 'rxjs';
 import { skip, filter } from 'rxjs/operators';
 
-export const STARTING_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+export const DEFAULT_STARTING_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export class Cell {
 
@@ -9,8 +9,8 @@ export class Cell {
 
   private valueSet: Subject<number> = new ReplaySubject(1);
 
-  constructor() {
-    this.options = [...STARTING_OPTIONS];
+  constructor(allOptions: number[] = DEFAULT_STARTING_OPTIONS) {
+    this.options = [...allOptions];
   }
 
   eliminateOption(option: number): void {
