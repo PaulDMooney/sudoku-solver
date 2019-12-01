@@ -17,32 +17,30 @@ describe('Cell', () => {
       const expectedResult = 1;
       const toEliminate = [2, 3, 4, 5, 6, 7, 8, 9];
 
-      cell.value.subscribe(result => {
-
-        // Then
-        expect(result).toBe(expectedResult);
-        done();
-      });
-
       // When
       toEliminate.forEach(item => cell.eliminateOption(item));
+
+      cell.cellStatus.subscribe(result => {
+
+        // Then
+        expect(result).toEqual({complete: true, value: expectedResult});
+        done();
+      });
     });
 
-    it('should report final number when all options removed to new subscribers', done => {
+    it('should report not complete for first status', async done => {
 
       // Given
       const expectedResult = 1;
       const toEliminate = [2, 3, 4, 5, 6, 7, 8, 9];
 
       // When
-      toEliminate.forEach(item => cell.eliminateOption(item));
+      const result = await cell.cellStatus.pipe(take(1)).toPromise();
 
-      cell.value.subscribe(result => {
+      // Then
+      expect(result).toEqual({complete: false});
+      done();
 
-        // Then
-        expect(result).toBe(expectedResult);
-        done();
-      });
     });
   });
 
@@ -56,8 +54,8 @@ describe('Cell', () => {
       cell.eliminateAllOptionsExcept(explicitValue);
 
       // Then
-      const result = await cell.value.pipe(take(1)).toPromise();
-      expect(result).toBe(explicitValue);
+      const result = await cell.cellStatus.pipe(take(1)).toPromise();
+      expect(result).toEqual({complete: true, value: explicitValue});
       done();
     });
 

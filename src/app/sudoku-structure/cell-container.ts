@@ -1,9 +1,9 @@
-import { Cell } from './cell';
-import { Subject, ReplaySubject, forkJoin, Observable } from 'rxjs';
+import { Cell, CellStatus } from './cell';
+import { Subject, ReplaySubject, forkJoin, Observable, combineLatest, BehaviorSubject } from 'rxjs';
 
 export class CellContainer {
 
-  private containerSolved$: Subject<boolean> = new ReplaySubject(1);
+  private containerSolved$: Subject<boolean> = new BehaviorSubject(false);
 
   constructor(private cells: Cell[]) {
 
@@ -11,10 +11,15 @@ export class CellContainer {
     console.log('Cells', cells.length);
 
     // Emit Event when all cells are complete.
-    forkJoin(cells.map(cell => cell.value)).subscribe((values: number[]) => {
-      console.log('Container solved');
-      this.containerSolved$.next(true);
-      this.containerSolved$.complete();
+    combineLatest(cells.map(cell => cell.cellStatus)).subscribe((values: CellStatus[]) => {
+
+      if (values.filter((status: CellStatus) => !status.complete).length === 0) {
+
+        console.log('Container solved');
+        this.containerSolved$.next(true);
+      } else {
+        this.containerSolved$.next(false);
+      }
     });
   }
 
@@ -26,12 +31,14 @@ export class CellContainer {
 
 function subscribeToValueSetEvent(cell: Cell, cells: Cell[]) {
 
-  cell.value.subscribe(value => {
-    console.log('Notifying cells of final value set', value);
-    cells.forEach(otherCell => {
-      if (otherCell !== cell) {
-        otherCell.eliminateOption(value);
-      }
-    });
+  cell.cellStatus.subscribe(status => {
+    if (status.complete) {
+      console.log('Notifying cells of final value set', status);
+      cells.forEach(otherCell => {
+        if (otherCell !== cell) {
+          otherCell.eliminateOption(status.value);
+        }
+      });
+    }
   });
 }

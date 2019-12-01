@@ -3,11 +3,15 @@ import { skip, filter } from 'rxjs/operators';
 
 export const DEFAULT_STARTING_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+export interface CellStatus {
+  complete: boolean;
+  value?: number;
+}
 export class Cell {
 
   private options: number[];
 
-  private valueSet$: Subject<number> = new ReplaySubject(1);
+  private cellStatus$: Subject<CellStatus> = new BehaviorSubject({complete: false});
 
   constructor(allOptions: number[] = DEFAULT_STARTING_OPTIONS) {
     this.options = [...allOptions];
@@ -40,12 +44,11 @@ export class Cell {
 
   private emitValueSet(value: number) {
     console.log('Value set event', value);
-    this.valueSet$.next(value);
-    this.valueSet$.complete();
+    this.cellStatus$.next({complete: true, value});
   }
 
-  get value(): Observable<number> {
-    return this.valueSet$;
+  get cellStatus(): Observable<CellStatus> {
+    return this.cellStatus$;
   }
 }
 

@@ -1,15 +1,17 @@
 import { CellContainer } from './cell-container';
-import { ReplaySubject, Observable, Subject, forkJoin } from 'rxjs';
+import { ReplaySubject, Observable, Subject, forkJoin, combineLatest, BehaviorSubject } from 'rxjs';
 
 export class Board {
 
-  boardSolved$: Subject<boolean> = new ReplaySubject(1);
+  boardSolved$: Subject<boolean> = new BehaviorSubject(false);
 
   constructor(private cellContainers: CellContainer[]) {
 
-    forkJoin(cellContainers.map(cellContainer => cellContainer.containerSolvedEvent))
-      .subscribe((values: boolean[]) => {
-        this.boardSolved$.next(true);
+    combineLatest(cellContainers.map(cellContainer => cellContainer.containerSolvedEvent))
+      .subscribe((statuses: boolean[]) => {
+
+        const boardStatus = statuses.filter(status => !status).length === 0;
+        this.boardSolved$.next(boardStatus);
       });
   }
 
