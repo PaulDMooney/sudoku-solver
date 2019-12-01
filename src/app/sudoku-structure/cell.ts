@@ -7,7 +7,7 @@ export class Cell {
 
   private options: number[];
 
-  private valueSet: Subject<number> = new ReplaySubject(1);
+  private valueSet$: Subject<number> = new ReplaySubject(1);
 
   constructor(allOptions: number[] = DEFAULT_STARTING_OPTIONS) {
     this.options = [...allOptions];
@@ -15,9 +15,14 @@ export class Cell {
 
   eliminateOption(option: number): void {
 
+    // Needed check to prevent infinite recursion
+    if (this.options.length <= 1 ) {
+      return;
+    }
+
     this.options = this.options.filter(item => item !== option);
     if (this.options.length === 1) {
-      this.valueSet.next(this.options[0]);
+      this.emitValueSet(this.options[0]);
     }
   }
 
@@ -26,14 +31,21 @@ export class Cell {
 
     if (potentialOptions.length === 1) {
       this.options = potentialOptions;
-      this.valueSet.next(this.options[0]);
+      this.emitValueSet(this.options[0]);
     } else {
       throw new UnexpectedValue(explicitValue);
     }
   }
 
-  get valueSetEvent() {
-    return this.valueSet;
+
+  private emitValueSet(value: number) {
+    console.log('Value set event', value);
+    this.valueSet$.next(value);
+    this.valueSet$.complete();
+  }
+
+  get value(): Observable<number> {
+    return this.valueSet$;
   }
 }
 

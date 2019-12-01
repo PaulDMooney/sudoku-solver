@@ -1,4 +1,4 @@
-import { Cell, STARTING_OPTIONS, UnexpectedValue } from './cell';
+import { Cell, DEFAULT_STARTING_OPTIONS, UnexpectedValue } from './cell';
 import { doesNotThrow } from 'assert';
 import { take } from 'rxjs/operators';
 
@@ -11,13 +11,13 @@ describe('Cell', () => {
   });
 
   describe('eliminateOption', () => {
-    it('should report number when all options removed', done => {
+    it('should report final number when all options removed', done => {
 
       // Given
       const expectedResult = 1;
       const toEliminate = [2, 3, 4, 5, 6, 7, 8, 9];
 
-      cell.valueSetEvent.subscribe(result => {
+      cell.value.subscribe(result => {
 
         // Then
         expect(result).toBe(expectedResult);
@@ -28,7 +28,7 @@ describe('Cell', () => {
       toEliminate.forEach(item => cell.eliminateOption(item));
     });
 
-    it('should report number when all options removed to new subscribers', done => {
+    it('should report final number when all options removed to new subscribers', done => {
 
       // Given
       const expectedResult = 1;
@@ -37,7 +37,7 @@ describe('Cell', () => {
       // When
       toEliminate.forEach(item => cell.eliminateOption(item));
 
-      cell.valueSetEvent.subscribe(result => {
+      cell.value.subscribe(result => {
 
         // Then
         expect(result).toBe(expectedResult);
@@ -47,7 +47,7 @@ describe('Cell', () => {
   });
 
   describe('eliminateAllOptionsExcept', () => {
-    it ('should report number when explicit value set', async done => {
+    it ('should report final number when explicit value set', async done => {
 
       // Given
       const explicitValue = 5;
@@ -56,7 +56,7 @@ describe('Cell', () => {
       cell.eliminateAllOptionsExcept(explicitValue);
 
       // Then
-      const result = await cell.valueSetEvent.pipe(take(1)).toPromise();
+      const result = await cell.value.pipe(take(1)).toPromise();
       expect(result).toBe(explicitValue);
       done();
     });
