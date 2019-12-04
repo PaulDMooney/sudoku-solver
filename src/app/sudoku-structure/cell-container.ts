@@ -8,7 +8,6 @@ export class CellContainer {
   constructor(private cells: Cell[]) {
 
     cells.forEach(cell => subscribeToValueSetEvent(cell, cells));
-    console.log('Cells', cells.length);
 
     // Emit Event when all cells are complete.
     combineLatest(cells.map(cell => cell.cellStatus)).subscribe((values: CellStatus[]) => {
