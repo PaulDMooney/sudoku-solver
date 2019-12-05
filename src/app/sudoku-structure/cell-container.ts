@@ -1,4 +1,4 @@
-import { Cell, CellStatus } from './cell';
+import { Cell, CellStatus, ValueEventType } from './cell';
 import { Subject, ReplaySubject, forkJoin, Observable, combineLatest, BehaviorSubject } from 'rxjs';
 
 export class CellContainer {
@@ -38,6 +38,15 @@ function subscribeToValueSetEvent(cell: Cell, cells: Cell[]) {
           otherCell.eliminateOption(status.value);
         }
       });
+    } else {
+      if (status.valueEvent === ValueEventType.UNSET) {
+        console.log('Notifying cells of re-added option', status);
+        cells.forEach(otherCell => {
+          if (otherCell !== cell) {
+            otherCell.addOption(status.value);
+          }
+        });
+      }
     }
   });
 }

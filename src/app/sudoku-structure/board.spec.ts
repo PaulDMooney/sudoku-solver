@@ -14,10 +14,10 @@ describe('Board', () => {
     const board = new Board([new CellContainer(boxCells), new CellContainer(rowCells)], []);
 
     // Expecting overlapping cell boxCell[0] to be set automatically, expecting final cell rowCells[3] to be set automatically
-    boxCells[2].eliminateAllOptionsExcept(1);
-    boxCells[3].eliminateAllOptionsExcept(2);
-    boxCells[1].eliminateAllOptionsExcept(3); // Overlapping cell
-    rowCells[2].eliminateAllOptionsExcept(1);
+    boxCells[2].setValue(1);
+    boxCells[3].setValue(2);
+    boxCells[1].setValue(3); // Overlapping cell
+    rowCells[2].setValue(1);
 
     // When
     const result = await board.boardSolved.pipe(take(1)).toPromise();

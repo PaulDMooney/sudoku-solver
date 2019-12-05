@@ -1,4 +1,4 @@
-import { Cell, DEFAULT_STARTING_OPTIONS, UnexpectedValue } from './cell';
+import { Cell, DEFAULT_STARTING_OPTIONS, UnexpectedValue, CellStatus, ValueEventType } from './cell';
 import { doesNotThrow } from 'assert';
 import { take } from 'rxjs/operators';
 
@@ -23,7 +23,7 @@ describe('Cell', () => {
       cell.cellStatus.subscribe(result => {
 
         // Then
-        expect(result).toEqual({complete: true, value: expectedResult});
+        expect(result).toEqual({complete: true, value: expectedResult, valueEvent: ValueEventType.DERIVED});
         done();
       });
     });
@@ -44,18 +44,18 @@ describe('Cell', () => {
     });
   });
 
-  describe('eliminateAllOptionsExcept', () => {
+  describe('setValue', () => {
     it ('should report final number when explicit value set', async done => {
 
       // Given
       const explicitValue = 5;
 
       // When
-      cell.eliminateAllOptionsExcept(explicitValue);
+      cell.setValue(explicitValue);
 
       // Then
-      const result = await cell.cellStatus.pipe(take(1)).toPromise();
-      expect(result).toEqual({complete: true, value: explicitValue});
+      const result: CellStatus = await cell.cellStatus.pipe(take(1)).toPromise();
+      expect(result).toEqual({complete: true, value: explicitValue, valueEvent: ValueEventType.EXPLICIT});
       done();
     });
 
@@ -66,8 +66,82 @@ describe('Cell', () => {
       cell.eliminateOption(explicitValue);
 
       // When / Then
-      expect( () => cell.eliminateAllOptionsExcept(explicitValue)).toThrow(UnexpectedValue);
+      expect( () => cell.setValue(explicitValue)).toThrow(UnexpectedValue);
 
     });
+  });
+
+  describe('unsetValue', () => {
+    it('should report not complete and previous value', async (done) => {
+
+      // Given
+      const explicitValue = 5;
+      cell.setValue(5);
+
+      // When
+      cell.unsetValue();
+
+      const result = await cell.cellStatus.pipe(take(1)).toPromise();
+
+      expect(result).toEqual({complete: false, value: explicitValue, valueEvent: ValueEventType.UNSET});
+      done();
+
+    });
+
+    it('should remain incomplete if called when no value had been set previously', async (done) => {
+
+      // When
+      cell.unsetValue();
+
+      const result = await cell.cellStatus.pipe(take(1)).toPromise();
+
+      expect(result).toEqual({complete: false});
+      done();
+    });
+  });
+
+  describe('addOption', () => {
+
+    it('should throw an error if that option is the cells value', () => {
+
+      // Given
+      const explicitValue = 5;
+      cell.setValue(5);
+
+      // When / Then
+      expect(() => cell.addOption(explicitValue)).toThrow(UnexpectedValue);
+    });
+  });
+
+  it('should cause cells with DERIVED values to report not complete and previous value', async (done) => {
+
+    // Given
+    const simpleCell = new Cell([1, 2]);
+    simpleCell.eliminateOption(2);
+
+    // When
+    simpleCell.addOption(2);
+
+    // Then
+    const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
+
+    expect(result).toEqual({complete: false, value: 2, valueEvent: ValueEventType.UNSET});
+    done();
+  });
+
+  it('should not cause a change in event for cells with EXPLICIT values', async (done) => {
+
+    // Given
+    const simpleCell = new Cell([1, 2]);
+    simpleCell.setValue(2);
+
+    // When
+    simpleCell.addOption(2);
+
+    // Then
+    const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
+
+    expect(result).toEqual({complete: true, value: 2, valueEvent: ValueEventType.EXPLICIT});
+    done();
   });
 });
