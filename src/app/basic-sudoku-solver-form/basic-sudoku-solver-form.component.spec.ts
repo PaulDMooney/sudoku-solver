@@ -3,7 +3,9 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { BasicSudokuSolverFormComponent } from './basic-sudoku-solver-form.component';
 import { boardFactory, Board } from '../sudoku-structure/board';
 import { By } from '@angular/platform-browser';
-import { DebugElement, Component } from '@angular/core';
+import { DebugElement, Component, Input } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
+import { SudokuSolverInputCellComponent } from '../sudoku-solver-input-cell/sudoku-solver-input-cell.component';
 
 
 @Component({
@@ -11,7 +13,7 @@ import { DebugElement, Component } from '@angular/core';
 })
 class ParentWrapper {
 
-  board: Board;
+  @Input() board: Board;
 }
 
 describe('BasicSudokuSolverFormComponent', () => {
@@ -20,7 +22,8 @@ describe('BasicSudokuSolverFormComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ParentWrapper, BasicSudokuSolverFormComponent ]
+      imports: [ReactiveFormsModule],
+      declarations: [ ParentWrapper, BasicSudokuSolverFormComponent, SudokuSolverInputCellComponent ],
     })
     .compileComponents();
   }));
@@ -28,7 +31,7 @@ describe('BasicSudokuSolverFormComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ParentWrapper);
     wrapperComponent = fixture.componentInstance;
-    // fixture.detectChanges();
+    fixture.detectChanges();
   });
 
   it('should create', () => {

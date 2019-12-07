@@ -1,1 +1,7 @@
-<p>basic-sudoku-solver-form works!</p>
+<div *ngFor="let column of board?.grid; let columnNumber = index">
+
+  <span *ngFor="let cell of column; let rowNumber = index">
+    <app-sudoku-solver-input-cell [cell]="cell" [cellRow]="rowNumber" [cellColumn]="columnNumber"></app-sudoku-solver-input-cell>
+    <!-- <input type="text" [formControl]="cellInput" [attr.data-sudoku-cell]="columnNumber + ', ' + rowNumber"> -->
+  </span>
+</div>
