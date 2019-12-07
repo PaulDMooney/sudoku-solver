@@ -53,7 +53,7 @@ export class Cell {
 
     this.options.push(newOption);
     if (this.valueOrigin === ValueEventType.DERIVED) {
-      this.unsetValue();
+      this._unsetValue();
     }
   }
 
@@ -62,18 +62,12 @@ export class Cell {
   }
 
   unsetValue(): void {
-    if (!this.value) {
-      return;
+
+    if (this.valueOrigin === ValueEventType.DERIVED) {
+      throw new UnsupportedOperation('A cell with a DERIVED value cannot be unset');
     }
 
-    const unsetEvent: CellStatus = {complete: false, value: this.value, valueEvent: ValueEventType.UNSET};
-    if (!this.options.includes(this.value)) {
-      this.options.push(this.value);
-    }
-    this.value = null;
-    this.valueOrigin = null;
-
-    this.cellStatus$.next(unsetEvent);
+    this._unsetValue();
   }
 
   private setValueAndOrigin(explicitValue: number, valueOrigin: ValueEventType): void {
@@ -90,6 +84,21 @@ export class Cell {
 
   }
 
+  private _unsetValue(): void {
+    if (!this.value) {
+      return;
+    }
+
+    const unsetEvent: CellStatus = {complete: false, value: this.value, valueEvent: ValueEventType.UNSET};
+    if (!this.options.includes(this.value)) {
+      this.options.push(this.value);
+    }
+    this.value = null;
+    this.valueOrigin = null;
+
+    this.cellStatus$.next(unsetEvent);
+  }
+
   private emitValueSet(value: number, valueEvent: ValueEventType) {
     console.log('Value set event', value);
     this.cellStatus$.next({complete: true, value, valueEvent});
@@ -101,6 +110,13 @@ export class Cell {
 }
 
 export class UnexpectedValue extends Error {
+
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+export class UnsupportedOperation extends Error {
 
   constructor(message: string) {
     super(message);

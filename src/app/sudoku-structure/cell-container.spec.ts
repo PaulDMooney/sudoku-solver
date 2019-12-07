@@ -4,7 +4,73 @@ import { take } from 'rxjs/operators';
 
 describe('CellContainer', () => {
 
-  it('should notify cells of options eliminated from the container', () => {
+  it('should emit a container solved event of false to start', async (done) => {
+
+    // Given
+    const cellOptions = [1, 2, 3, 4];
+    const cells = cellOptions.map(() => new Cell(cellOptions));
+    const cellContainer = new CellContainer(cells);
+
+    // When
+    const result = await cellContainer.containerSolvedEvent.pipe(take(1)).toPromise();
+
+    // Then
+    expect(result).toBe(false);
+    done();
+  });
+
+  it('should emit container solved event with true value when all cells have final number', async (done) => {
+
+    // Given
+    const cellOptions = [1, 2, 3, 4];
+    const cells = cellOptions.map(() => new Cell(cellOptions));
+    const cellContainer = new CellContainer(cells);
+
+    // When
+    cells[0].setValue(cellOptions[0]);
+    cells[1].setValue(cellOptions[1]);
+    cells[2].setValue(cellOptions[2]); // cell[3] should have derived it's final number by now
+
+    const result = await cellContainer.containerSolvedEvent.pipe(take(1)).toPromise();
+
+    // Then
+    expect(result).toBe(true);
+    done();
+
+  });
+
+  it('should emit container solved event of false when a cell is unset', async (done) => {
+
+    // Given
+    const cellOptions = [1, 2, 3, 4];
+    const cells = cellOptions.map(() => new Cell(cellOptions));
+    const cellContainer = new CellContainer(cells);
+    cells[0].setValue(cellOptions[0]);
+    cells[1].setValue(cellOptions[1]);
+    cells[2].setValue(cellOptions[2]); // At this point the container is solved.
+
+    // When
+    cells[0].unsetValue();
+
+    const result = await cellContainer.containerSolvedEvent.pipe(take(1)).toPromise();
+
+    // Then
+    expect(result).toBe(false);
+    done();
+  });
+
+  it('should throw an error if two cells have the same value attempted', () => {
+
+    // Given
+    const cells = [new Cell(), new Cell(), new Cell(), new Cell()];
+    const cellContainer = new CellContainer(cells);
+    cells[0].setValue(4);
+
+    // When / Then
+    expect(() => cells[2].setValue(4)).toThrowError();
+  });
+
+  it('should notify other cells of options eliminated from the container', () => {
 
     // Given
     const cell1 = new Cell();
@@ -20,35 +86,20 @@ describe('CellContainer', () => {
     expect(cell2Spy).toHaveBeenCalledWith(setValue);
   });
 
-  it('should throw an error if two cells have the same value attempted', () => {
+  it('should not notify originating cell of option eliminated from the container', () => {
 
     // Given
-    const cells = [new Cell(), new Cell(), new Cell(), new Cell()];
-    const cellContainer = new CellContainer(cells);
-    cells[0].setValue(4);
-
-    // When / Then
-    expect(() => cells[2].setValue(4)).toThrowError();
-  });
-
-  it('should emit event with true value when all cells have final number', async (done) => {
-
-    // Given
-    const cellOptions = [1, 2, 3, 4];
-    const cells = cellOptions.map(() => new Cell(cellOptions));
-    const cellContainer = new CellContainer(cells);
+    const cell1 = new Cell();
+    const cell2 = new Cell();
+    const cell1Spy = jest.spyOn(cell1, 'eliminateOption');
+    const cellContainer = new CellContainer([cell1, cell2]);
+    const setValue = 4;
 
     // When
-    cells[0].setValue(cellOptions[0]);
-    cells[1].setValue(cellOptions[1]);
-    cells[2].setValue(cellOptions[2]);
-
-    const result = await cellContainer.containerSolvedEvent.pipe(take(1)).toPromise();
+    cell1.setValue(setValue);
 
     // Then
-    expect(result).toBe(true);
-    done();
-
+    expect(cell1Spy).not.toHaveBeenCalledWith(setValue);
   });
 
   it('should notify cells of options made available to the container again', () => {

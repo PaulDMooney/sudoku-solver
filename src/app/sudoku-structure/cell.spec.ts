@@ -1,4 +1,4 @@
-import { Cell, DEFAULT_STARTING_OPTIONS, UnexpectedValue, CellStatus, ValueEventType } from './cell';
+import { Cell, DEFAULT_STARTING_OPTIONS, UnexpectedValue, CellStatus, ValueEventType, UnsupportedOperation } from './cell';
 import { doesNotThrow } from 'assert';
 import { take } from 'rxjs/operators';
 
@@ -98,6 +98,17 @@ describe('Cell', () => {
       expect(result).toEqual({complete: false});
       done();
     });
+
+    it('should throw an error when attempted to be called on a cell with a DERIVED value', () => {
+
+      // Given
+      const cellOptions = [1,2];
+      const simpleCell = new Cell(cellOptions);
+      simpleCell.eliminateOption(2); // At this point the cell will have a DERIVED value of 1.
+
+      // When / Then
+      expect(() => simpleCell.unsetValue()).toThrow(UnsupportedOperation);
+    });
   });
 
   describe('addOption', () => {
@@ -117,7 +128,7 @@ describe('Cell', () => {
 
     // Given
     const simpleCell = new Cell([1, 2]);
-    simpleCell.eliminateOption(2);
+    simpleCell.eliminateOption(2); // Will have derived value of 1
 
     // When
     simpleCell.addOption(2);
@@ -125,7 +136,7 @@ describe('Cell', () => {
     // Then
     const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
 
-    expect(result).toEqual({complete: false, value: 2, valueEvent: ValueEventType.UNSET});
+    expect(result).toEqual({complete: false, value: 1, valueEvent: ValueEventType.UNSET});
     done();
   });
 
@@ -136,7 +147,7 @@ describe('Cell', () => {
     simpleCell.setValue(2);
 
     // When
-    simpleCell.addOption(2);
+    simpleCell.addOption(1);
 
     // Then
     const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
