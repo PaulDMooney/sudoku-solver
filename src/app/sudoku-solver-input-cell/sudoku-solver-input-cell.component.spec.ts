@@ -72,7 +72,7 @@ describe('SudokuSolverInputCellComponent', () => {
   it('should render a span displaying a cells DERIVED value and no input field', () => {
 
     // Given
-    const cell = new Cell([1,2]);
+    const cell = new Cell([1, 2]);
 
     // When
     component.cell = cell;
@@ -95,9 +95,9 @@ describe('SudokuSolverInputCellComponent', () => {
     fixture.detectChanges();
 
     // When
-    const inputEl = fixture.debugElement.query(By.css('input'));
-    inputEl.nativeElement.value = '1';
-    inputEl.nativeElement.dispatchEvent(new Event('input'));
+    const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
+    inputEl.value = '1';
+    inputEl.dispatchEvent(new Event('input'));
 
     // Then
     const result: CellStatus = await cell.cellStatus.pipe(take(1)).toPromise();
@@ -106,8 +106,25 @@ describe('SudokuSolverInputCellComponent', () => {
 
   });
 
-  it('should fail validation for non-numeric characters')
-  it('should fail validation for non-options')
-  it('should fail validation for unexpected values')
+  it('should fail validation for non-numeric characters and not set value in cell', () => {
+
+    // Given
+    const cell = new Cell([1, 2]);
+    const cellSpy = spyOn(cell, 'setValue');
+    component.cell = cell;
+
+    // When
+    const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
+    inputEl.value = 'A';
+    inputEl.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    // Then
+    expect(cellSpy).toHaveBeenCalledTimes(0);
+    expect(inputEl.classList).toContain('validation-error');
+
+  });
+  it('should fail validation for non-options');
+  it('should fail validation for unexpected values');
 
 });

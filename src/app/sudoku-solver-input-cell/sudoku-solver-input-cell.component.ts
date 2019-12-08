@@ -13,7 +13,8 @@ import { FormControl } from '@angular/forms';
         [formControl]="formControl"
         value="{{cellStatus.value ? cellStatus.value : ''}}"
         [attr.data-sudoku-cell]="cellColumn + ',' + cellRow"
-        [attr.data-cell-status]="cellStatus.valueEvent">
+        [attr.data-cell-status]="cellStatus.valueEvent"
+        [ngClass]="{'validation-error': formControl.invalid}">
       <ng-template #readOnlyView>
         <span [attr.data-display-value]="cell.value">{{cell.value}}</span>
       </ng-template>
@@ -43,14 +44,22 @@ export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (this.cell) {
       this.formControl = new FormControl();
+
+      this.formControl.setValidators((control) => {
+        const valueNumber = parseInt(control.value);
+        if (!this.cell.canSetValue(valueNumber)) {
+          return { invalidOption: { valid: false, value: control.value}}
+        }
+      });
       this.formControl.valueChanges.subscribe((newValue) => {
+        if (this.formControl.invalid) {
+          return;
+        }
         const numberValue = parseInt(newValue, 10);
         console.log('newValue', newValue, numberValue);
         this.cell.setValue(numberValue);
       });
     }
   }
-
-
 
 }

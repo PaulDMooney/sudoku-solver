@@ -61,6 +61,10 @@ export class Cell {
     this.setValueAndOrigin(explicitValue, ValueEventType.EXPLICIT);
   }
 
+  canSetValue(value: number) {
+    return this.options.includes(value);
+  }
+
   unsetValue(): void {
 
     if (this.valueOrigin === ValueEventType.DERIVED) {
@@ -73,7 +77,7 @@ export class Cell {
   private setValueAndOrigin(explicitValue: number, valueOrigin: ValueEventType): void {
 
     // Validate that the value was an available option.
-    if (!this.options.includes(explicitValue)) {
+    if (!this.canSetValue(explicitValue)) {
       throw new UnexpectedValue(`${explicitValue} has previously been eliminated as an option.
         The list of options can not be reduced to this value`);
     }

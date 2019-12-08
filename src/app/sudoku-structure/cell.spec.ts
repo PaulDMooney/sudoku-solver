@@ -1,6 +1,7 @@
 import { Cell, DEFAULT_STARTING_OPTIONS, UnexpectedValue, CellStatus, ValueEventType, UnsupportedOperation } from './cell';
 import { doesNotThrow } from 'assert';
 import { take } from 'rxjs/operators';
+import { EEXIST } from 'constants';
 
 describe('Cell', () => {
 
@@ -155,4 +156,33 @@ describe('Cell', () => {
     expect(result).toEqual({complete: true, value: 2, valueEvent: ValueEventType.EXPLICIT});
     done();
   });
+
+  describe('canSetValue', () => {
+
+    it('should return true if a value is in list of available options', () => {
+
+      // Given
+      const simpleCell = new Cell([1,2]);
+
+      // When
+      const result = simpleCell.canSetValue(1);
+
+      // Then
+      expect(result).toBe(true);
+    });
+
+    it('should return false if the value is not in the list of available options', () => {
+
+      // Given
+      const simpleCell = new Cell([1,2]);
+      simpleCell.eliminateOption(1);
+
+      // When
+      const result = simpleCell.canSetValue(1);
+
+      // Then
+      expect(result).toBe(false);
+
+    })
+  })
 });
