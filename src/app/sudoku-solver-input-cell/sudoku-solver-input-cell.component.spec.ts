@@ -2,8 +2,10 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SudokuSolverInputCellComponent } from './sudoku-solver-input-cell.component';
 import { Component, Input } from '@angular/core';
-import { Cell } from '../sudoku-structure/cell';
+import { Cell, CellStatus, ValueEventType } from '../sudoku-structure/cell';
 import { By } from '@angular/platform-browser';
+import { take } from 'rxjs/operators';
+import { ReactiveFormsModule } from '@angular/forms';
 
 
 @Component({
@@ -20,6 +22,7 @@ describe('SudokuSolverInputCellComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      imports: [ReactiveFormsModule],
       declarations: [ ParentWrapper, SudokuSolverInputCellComponent ]
     })
     .compileComponents();
@@ -54,11 +57,11 @@ describe('SudokuSolverInputCellComponent', () => {
 
     // Given
     const cell = new Cell([1, 2]);
+    component.cell = cell;
 
     // When
-    component.cell = cell;
-    fixture.detectChanges();
     cell.setValue(2);
+    fixture.detectChanges();
 
     // Then
     const input = fixture.debugElement.query(By.css('input'));
@@ -66,6 +69,41 @@ describe('SudokuSolverInputCellComponent', () => {
     expect(input.nativeElement.value).toBe('2');
   });
 
-  it('should render a span displaying a cells DERIVED value and no input field');
+  it('should render a span displaying a cells DERIVED value and no input field', () => {
+
+    // Given
+    const cell = new Cell([1,2]);
+
+    // When
+    component.cell = cell;
+    cell.eliminateOption(2); // derived value should be 1
+    fixture.detectChanges();
+
+    // Then
+    const input = fixture.debugElement.query(By.css('input'));
+    expect(input).not.toBeTruthy();
+    const displaySpan = fixture.debugElement.query(By.css('span[data-display-value]'));
+    expect(displaySpan).toBeTruthy();
+    expect(displaySpan.nativeElement.innerHTML).toBe('1');
+  });
+
+  it('should set the value from the input field into the cell', async (done) => {
+
+    // Given
+    const cell = new Cell([1, 2]);
+    component.cell = cell;
+    fixture.detectChanges();
+
+    // When
+    const inputEl = fixture.debugElement.query(By.css('input'));
+    inputEl.nativeElement.value = '1';
+    inputEl.nativeElement.dispatchEvent(new Event('input'));
+
+    // Then
+    const result: CellStatus = await cell.cellStatus.pipe(take(1)).toPromise();
+    expect(result).toEqual({complete: true, valueEvent: ValueEventType.EXPLICIT, value: 1});
+    done();
+
+  })
 
 });

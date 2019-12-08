@@ -100,7 +100,6 @@ export class Cell {
   }
 
   private emitValueSet(value: number, valueEvent: ValueEventType) {
-    console.log('Value set event', value);
     this.cellStatus$.next({complete: true, value, valueEvent});
   }
 

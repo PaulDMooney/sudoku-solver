@@ -32,7 +32,7 @@ function subscribeToValueSetEvent(cell: Cell, cells: Cell[]) {
 
   cell.cellStatus.subscribe(status => {
     if (status.complete) {
-      console.log('Notifying cells of final value set', status);
+      // console.log('Notifying cells of final value set', status);
       cells.forEach(otherCell => {
         if (otherCell !== cell) {
           otherCell.eliminateOption(status.value);
@@ -40,7 +40,7 @@ function subscribeToValueSetEvent(cell: Cell, cells: Cell[]) {
       });
     } else {
       if (status.valueEvent === ValueEventType.UNSET) {
-        console.log('Notifying cells of re-added option', status);
+        // console.log('Notifying cells of re-added option', status);
         cells.forEach(otherCell => {
           if (otherCell !== cell) {
             otherCell.addOption(status.value);
