@@ -104,6 +104,10 @@ describe('SudokuSolverInputCellComponent', () => {
     expect(result).toEqual({complete: true, valueEvent: ValueEventType.EXPLICIT, value: 1});
     done();
 
-  })
+  });
+
+  it('should fail validation for non-numeric characters')
+  it('should fail validation for non-options')
+  it('should fail validation for unexpected values')
 
 });
