@@ -48,7 +48,7 @@ describe('BasicSudokuSolverFormComponent', () => {
     fixture.detectChanges();
 
     // Then
-    const cellInputs: DebugElement[] = fixture.debugElement.queryAll(By.css('[data-sudoku-cell]'));
+    const cellInputs: DebugElement[] = fixture.debugElement.queryAll(By.css('app-sudoku-solver-input-cell'));
     expect(cellInputs.length).toBe(81);
   });
 });
