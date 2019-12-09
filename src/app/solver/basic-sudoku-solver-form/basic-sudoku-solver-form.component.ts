@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Board } from '../sudoku-structure/board';
-import { Cell } from '../sudoku-structure/cell';
+import { Board } from '@app/sudoku-structure/board';
+import { Cell } from '@app/sudoku-structure/cell';
 
 @Component({
   selector: 'app-basic-solver-form',

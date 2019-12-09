@@ -1,22 +1,22 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Cell, ValueEventType, CellStatus } from '../sudoku-structure/cell';
+import { Cell, ValueEventType, CellStatus } from '@app/sudoku-structure/cell';
 import { FormControl, ValidationErrors } from '@angular/forms';
 
 @Component({
   selector: 'app-sudoku-solver-input-cell',
-  template: `X
+  template: `
     <ng-container *ngIf="(cell.cellStatus | async) as cellStatus" >
 
       <input
         *ngIf="!cellStatus.valueEvent || cellStatus.valueEvent !== valueEventType.DERIVED; else readOnlyView"
         type="text"
         [formControl]="formControl"
-        value="{{cellStatus.value ? cellStatus.value : ''}}"
+        value="{{cell.currentValue ? cell.currentValue : ''}}"
         [attr.data-sudoku-cell]="cellColumn + ',' + cellRow"
         [attr.data-cell-status]="cellStatus.valueEvent"
         [class.validation-error]="formControl.invalid">
       <ng-template #readOnlyView>
-        <span [attr.data-display-value]="cell.value">{{cell.value}}</span>
+        <span [attr.data-display-value]="cell.currentValue">{{cell.currentValue}}</span>
       </ng-template>
     </ng-container>
   `,

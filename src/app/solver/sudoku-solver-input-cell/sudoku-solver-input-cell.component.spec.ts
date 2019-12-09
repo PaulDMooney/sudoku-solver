@@ -1,11 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SudokuSolverInputCellComponent } from './sudoku-solver-input-cell.component';
 import { Component, Input } from '@angular/core';
-import { Cell, CellStatus, ValueEventType } from '../sudoku-structure/cell';
+import { Cell, CellStatus, ValueEventType } from '@app/sudoku-structure/cell';
 import { By } from '@angular/platform-browser';
 import { take } from 'rxjs/operators';
-import { ReactiveFormsModule } from '@angular/forms';
+import { SolverModule } from '../solver.module';
 
 
 @Component({
@@ -22,8 +21,8 @@ describe('SudokuSolverInputCellComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ReactiveFormsModule],
-      declarations: [ SudokuSolverInputCellComponent, ParentWrapper ]
+      imports: [SolverModule],
+      declarations: [ ParentWrapper ]
     })
     .compileComponents();
   }));

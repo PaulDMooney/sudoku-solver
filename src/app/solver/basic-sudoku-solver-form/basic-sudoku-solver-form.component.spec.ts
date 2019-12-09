@@ -1,11 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { BasicSudokuSolverFormComponent } from './basic-sudoku-solver-form.component';
-import { boardFactory, Board } from '../sudoku-structure/board';
+import { boardFactory, Board } from '@app/sudoku-structure/board';
 import { By } from '@angular/platform-browser';
 import { DebugElement, Component, Input } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { SudokuSolverInputCellComponent } from '../sudoku-solver-input-cell/sudoku-solver-input-cell.component';
+import { SolverModule } from '../solver.module';
 
 
 @Component({
@@ -22,8 +19,8 @@ describe('BasicSudokuSolverFormComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ReactiveFormsModule],
-      declarations: [ ParentWrapper, BasicSudokuSolverFormComponent, SudokuSolverInputCellComponent ],
+      imports: [SolverModule],
+      declarations: [ ParentWrapper],
     })
     .compileComponents();
   }));

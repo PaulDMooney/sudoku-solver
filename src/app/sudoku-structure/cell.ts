@@ -28,6 +28,10 @@ export class Cell {
     this.options = [...allOptions];
   }
 
+  get currentValue() {
+    return this.value;
+  }
+
   eliminateOption(option: number): void {
 
     // Needed check to prevent infinite recursion
