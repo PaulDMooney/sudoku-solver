@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Cell, ValueEventType, CellStatus } from '../sudoku-structure/cell';
-import { FormControl } from '@angular/forms';
+import { FormControl, ValidationErrors } from '@angular/forms';
 
 @Component({
   selector: 'app-sudoku-solver-input-cell',
@@ -14,7 +14,7 @@ import { FormControl } from '@angular/forms';
         value="{{cellStatus.value ? cellStatus.value : ''}}"
         [attr.data-sudoku-cell]="cellColumn + ',' + cellRow"
         [attr.data-cell-status]="cellStatus.valueEvent"
-        [ngClass]="{'validation-error': formControl.invalid}">
+        [class.validation-error]="formControl.invalid">
       <ng-template #readOnlyView>
         <span [attr.data-display-value]="cell.value">{{cell.value}}</span>
       </ng-template>
@@ -45,21 +45,43 @@ export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
     if (this.cell) {
       this.formControl = new FormControl();
 
-      this.formControl.setValidators((control) => {
-        const valueNumber = parseInt(control.value);
-        if (!this.cell.canSetValue(valueNumber)) {
-          return { invalidOption: { valid: false, value: control.value}}
-        }
-      });
+      const validator = createValidator(this.cell);
+      this.formControl.setValidators(validator);
+
       this.formControl.valueChanges.subscribe((newValue) => {
         if (this.formControl.invalid) {
+          console.log('Invalid state, skipping change listener')
           return;
         }
-        const numberValue = parseInt(newValue, 10);
+
+        if (!newValue || !newValue.trim()) {
+          this.cell.unsetValue();
+          return;
+        }
+
+        const numberValue = parseValue(newValue);
         console.log('newValue', newValue, numberValue);
         this.cell.setValue(numberValue);
       });
     }
   }
 
+}
+
+function createValidator(cell: Cell) {
+  return (control: FormControl): ValidationErrors => {
+
+    if (!control.value || !control.value.trim()) {
+      return null;
+    }
+
+    const valueNumber = parseValue(control.value);
+    if (/*isNaN(valueNumber) || */!cell.canSetValue(valueNumber)) {
+      return { invalidOption: { valid: false, value: control.value}}
+    }
+  }
+}
+
+function parseValue(value): number {
+  return parseInt(value, 10);
 }

@@ -23,7 +23,7 @@ describe('SudokuSolverInputCellComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [ReactiveFormsModule],
-      declarations: [ ParentWrapper, SudokuSolverInputCellComponent ]
+      declarations: [ SudokuSolverInputCellComponent, ParentWrapper ]
     })
     .compileComponents();
   }));
@@ -112,6 +112,7 @@ describe('SudokuSolverInputCellComponent', () => {
     const cell = new Cell([1, 2]);
     const cellSpy = spyOn(cell, 'setValue');
     component.cell = cell;
+    fixture.detectChanges();
 
     // When
     const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
@@ -124,7 +125,84 @@ describe('SudokuSolverInputCellComponent', () => {
     expect(inputEl.classList).toContain('validation-error');
 
   });
-  it('should fail validation for non-options');
-  it('should fail validation for unexpected values');
+
+  it('should fail validation for non-options', () => {
+
+    // Given
+    const cell = new Cell([1, 2]);
+    const cellSpy = spyOn(cell, 'setValue');
+    component.cell = cell;
+    fixture.detectChanges();
+
+    // When
+    const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
+    inputEl.value = '3'; // Not 1 or 2 from the supplied list of options
+    inputEl.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    // Then
+    expect(cellSpy).toHaveBeenCalledTimes(0);
+    expect(inputEl.classList).toContain('validation-error');
+  });
+
+  it('should fail validation for unexpected values', () => {
+
+    // Given
+    const cell = new Cell([1, 2, 3]);
+    const cellSpy = spyOn(cell, 'setValue');
+    component.cell = cell;
+    cell.eliminateOption(3); // Will be an unexpected value now.
+    fixture.detectChanges();
+
+    // When
+    const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
+    inputEl.value = '3';
+    inputEl.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    // Then
+    expect(cellSpy).toHaveBeenCalledTimes(0);
+    expect(inputEl.classList).toContain('validation-error');
+
+  });
+
+  it('should not fail validation for blank input', () => {
+
+    // Given
+    const cell = new Cell([1, 2]);
+    const cellSpy = spyOn(cell, 'setValue');
+    component.cell = cell;
+    fixture.detectChanges();
+
+    // When
+    const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
+    inputEl.value = '';
+    inputEl.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    // Then
+    expect(cellSpy).toHaveBeenCalledTimes(0);
+    expect(inputEl.classList).not.toContain('validation-error');
+
+  });
+
+  it('should unset cell value for blank input', () => {
+
+    // Given
+    const cell = new Cell([1, 2]);
+    const cellSpy = spyOn(cell, 'unsetValue');
+    component.cell = cell;
+    cell.setValue(1);
+    fixture.detectChanges();
+
+    // When
+    const inputEl = fixture.debugElement.query(By.css('input')).nativeElement;
+    inputEl.value = '';
+    inputEl.dispatchEvent(new Event('input'));
+
+    // Then
+    expect(cellSpy).toHaveBeenCalledTimes(1);
+
+  });
 
 });
