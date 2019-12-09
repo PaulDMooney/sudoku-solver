@@ -25,7 +25,7 @@ export function boardFactory(squareSize: number = 3): Board {
 
   const dimensionLength = squareSize * squareSize;
   const options: number[] = [];
-  for (let option = 1; option <= squareSize; option++) {
+  for (let option = 1; option <= dimensionLength; option++) {
     options.push(option);
   }
 
