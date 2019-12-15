@@ -69,17 +69,18 @@ function createCellContainersFromSquares(grid: Cell[][], squareSize: number): Ce
   for (let xSquares = 0; xSquares < squareSize; xSquares++) {
     for (let ySquares = 0; ySquares < squareSize; ySquares++) {
       const cells = getSquare(grid, xSquares, ySquares, squareSize);
+      toReturn.push(new CellContainer(cells));
     }
   }
 
   return toReturn;
 }
 
-function getSquare(grid: Cell[][], xSquare: number, ySquare: number, squareSize: number) {
+function getSquare(grid: Cell[][], xSquare: number, ySquare: number, squareSize: number): Cell[] {
 
   const cells = [];
   for (let i = xSquare * squareSize; i < xSquare * squareSize + squareSize; i++) {
-    for (let j = xSquare * squareSize; j < xSquare * squareSize + squareSize; j++) {
+    for (let j = ySquare * squareSize; j < ySquare * squareSize + squareSize; j++) {
       cells.push(grid[i][j]);
     }
   }

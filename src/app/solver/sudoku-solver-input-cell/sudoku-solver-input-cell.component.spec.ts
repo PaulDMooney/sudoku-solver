@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Component, Input } from '@angular/core';
-import { Cell, CellStatus, ValueEventType } from '@app/sudoku-structure/cell';
+import { Cell, CellStatus, ValueOriginType } from '@app/sudoku-structure/cell';
 import { By } from '@angular/platform-browser';
 import { take } from 'rxjs/operators';
 import { SolverModule } from '../solver.module';
@@ -100,7 +100,7 @@ describe('SudokuSolverInputCellComponent', () => {
 
     // Then
     const result: CellStatus = await cell.cellStatus.pipe(take(1)).toPromise();
-    expect(result).toEqual({complete: true, valueEvent: ValueEventType.EXPLICIT, value: 1});
+    expect(result).toEqual({complete: true, valueEvent: ValueOriginType.EXPLICIT, value: 1});
     done();
 
   });

@@ -1,0 +1,12 @@
+.board {
+  display: flex;
+  flex-direction: row;
+}
+.column {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+::ng-deep .cell input {
+  width: 2rem;
+}

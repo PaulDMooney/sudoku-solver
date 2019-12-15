@@ -1,6 +1,8 @@
-<div *ngFor="let column of board?.grid; let columnNumber = index">
+<div class="board">
+  <div *ngFor="let column of board?.grid; let columnNumber = index" class="column">
 
-  <span *ngFor="let cell of column; let rowNumber = index">
-    <app-sudoku-solver-input-cell [cell]="cell" [cellRow]="rowNumber" [cellColumn]="columnNumber"></app-sudoku-solver-input-cell>
-  </span>
+    <span *ngFor="let cell of column; let rowNumber = index" class="cell">
+      <app-sudoku-solver-input-cell [cell]="cell" [cellRow]="rowNumber" [cellColumn]="columnNumber"></app-sudoku-solver-input-cell>
+    </span>
+  </div>
 </div>

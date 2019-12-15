@@ -1,11 +1,15 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Cell, ValueEventType, CellStatus } from '@app/sudoku-structure/cell';
+import { Cell, ValueOriginType, CellStatus } from '@app/sudoku-structure/cell';
 import { FormControl, ValidationErrors } from '@angular/forms';
+import { bindCallback } from 'rxjs';
 
 @Component({
   selector: 'app-sudoku-solver-input-cell',
   template: `
-    <ng-container *ngIf="(cell.cellStatus | async) as cellStatus" >
+    <div class="cell-container" *ngIf="(cell.cellStatus | async) as cellStatus">
+      <ul class="options-list">
+        <li *ngFor="let option of cell?.currentOptions" [innerHTML]="option"></li>
+      </ul>
 
       <input
         *ngIf="!cellStatus.valueEvent || cellStatus.valueEvent !== valueEventType.DERIVED; else readOnlyView"
@@ -14,13 +18,32 @@ import { FormControl, ValidationErrors } from '@angular/forms';
         value="{{cell.currentValue ? cell.currentValue : ''}}"
         [attr.data-sudoku-cell]="cellColumn + ',' + cellRow"
         [attr.data-cell-status]="cellStatus.valueEvent"
+        [attr.data-cell-options]="cell.currentOptions"
         [class.validation-error]="formControl.invalid">
       <ng-template #readOnlyView>
         <span [attr.data-display-value]="cell.currentValue">{{cell.currentValue}}</span>
       </ng-template>
-    </ng-container>
+    </div>
   `,
-  styles: []
+  styles: [
+    `.cell-container {
+    border: 1px solid;
+    width: 5rem;
+    height: 4rem;
+  }`,
+  `ul.options-list {
+    padding-left:0;
+    margin:0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap:wrap;
+    list-style-type: none;
+
+  }`,
+  `ul.options-list li:not(:last-child)::after {
+    content: ','
+  }`
+]
 })
 export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
 
@@ -38,7 +61,7 @@ export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
   }
 
   get valueEventType() {
-    return ValueEventType;
+    return ValueOriginType;
   }
 
   ngOnChanges(changes: SimpleChanges): void {

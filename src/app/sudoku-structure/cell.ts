@@ -5,13 +5,18 @@ export const DEFAULT_STARTING_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export interface CellStatus {
   complete: boolean;
-  valueEvent?: ValueEventType;
+  valueEvent?: ValueOriginType;
   value?: number;
 }
 
-export enum ValueEventType {
+export enum ValueOriginType {
   EXPLICIT,
   DERIVED,
+  UNSET
+}
+
+export enum ValueChangeType {
+  SET,
   UNSET
 }
 export class Cell {
@@ -22,14 +27,18 @@ export class Cell {
 
   private value?: number;
 
-  private valueOrigin?: ValueEventType;
+  private valueOrigin?: ValueOriginType;
 
   constructor(allOptions: number[] = DEFAULT_STARTING_OPTIONS) {
     this.options = [...allOptions];
   }
 
-  get currentValue() {
+  get currentValue(): number {
     return this.value;
+  }
+
+  get currentOptions(): number[] {
+    return this.options;
   }
 
   eliminateOption(option: number): void {
@@ -41,7 +50,7 @@ export class Cell {
 
     this.options = this.options.filter(item => item !== option);
     if (!this.value && this.options.length === 1) {
-      this.setValueAndOrigin(this.options[0], ValueEventType.DERIVED);
+      this.setValueAndOrigin(this.options[0], ValueOriginType.DERIVED);
     }
   }
 
@@ -56,13 +65,13 @@ export class Cell {
     }
 
     this.options.push(newOption);
-    if (this.valueOrigin === ValueEventType.DERIVED) {
+    if (this.valueOrigin === ValueOriginType.DERIVED) {
       this._unsetValue();
     }
   }
 
   setValue(explicitValue: number): void {
-    this.setValueAndOrigin(explicitValue, ValueEventType.EXPLICIT);
+    this.setValueAndOrigin(explicitValue, ValueOriginType.EXPLICIT);
   }
 
   canSetValue(value: number) {
@@ -71,14 +80,14 @@ export class Cell {
 
   unsetValue(): void {
 
-    if (this.valueOrigin === ValueEventType.DERIVED) {
+    if (this.valueOrigin === ValueOriginType.DERIVED) {
       throw new UnsupportedOperation('A cell with a DERIVED value cannot be unset');
     }
 
     this._unsetValue();
   }
 
-  private setValueAndOrigin(explicitValue: number, valueOrigin: ValueEventType): void {
+  private setValueAndOrigin(explicitValue: number, valueOrigin: ValueOriginType): void {
 
     // Validate that the value was an available option.
     if (!this.canSetValue(explicitValue)) {
@@ -97,7 +106,7 @@ export class Cell {
       return;
     }
 
-    const unsetEvent: CellStatus = {complete: false, value: this.value, valueEvent: ValueEventType.UNSET};
+    const unsetEvent: CellStatus = {complete: false, value: this.value, valueEvent: ValueOriginType.UNSET};
     if (!this.options.includes(this.value)) {
       this.options.push(this.value);
     }
@@ -107,7 +116,7 @@ export class Cell {
     this.cellStatus$.next(unsetEvent);
   }
 
-  private emitValueSet(value: number, valueEvent: ValueEventType) {
+  private emitValueSet(value: number, valueEvent: ValueOriginType) {
     this.cellStatus$.next({complete: true, value, valueEvent});
   }
 

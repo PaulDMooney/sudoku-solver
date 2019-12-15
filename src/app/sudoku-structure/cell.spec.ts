@@ -1,4 +1,4 @@
-import { Cell, DEFAULT_STARTING_OPTIONS, UnexpectedValue, CellStatus, ValueEventType, UnsupportedOperation } from './cell';
+import { Cell, DEFAULT_STARTING_OPTIONS, UnexpectedValue, CellStatus, ValueOriginType, UnsupportedOperation } from './cell';
 import { doesNotThrow } from 'assert';
 import { take } from 'rxjs/operators';
 import { EEXIST } from 'constants';
@@ -24,7 +24,7 @@ describe('Cell', () => {
       cell.cellStatus.subscribe(result => {
 
         // Then
-        expect(result).toEqual({complete: true, value: expectedResult, valueEvent: ValueEventType.DERIVED});
+        expect(result).toEqual({complete: true, value: expectedResult, valueEvent: ValueOriginType.DERIVED});
         done();
       });
     });
@@ -56,7 +56,7 @@ describe('Cell', () => {
 
       // Then
       const result: CellStatus = await cell.cellStatus.pipe(take(1)).toPromise();
-      expect(result).toEqual({complete: true, value: explicitValue, valueEvent: ValueEventType.EXPLICIT});
+      expect(result).toEqual({complete: true, value: explicitValue, valueEvent: ValueOriginType.EXPLICIT});
       done();
     });
 
@@ -84,7 +84,7 @@ describe('Cell', () => {
 
       const result = await cell.cellStatus.pipe(take(1)).toPromise();
 
-      expect(result).toEqual({complete: false, value: explicitValue, valueEvent: ValueEventType.UNSET});
+      expect(result).toEqual({complete: false, value: explicitValue, valueEvent: ValueOriginType.UNSET});
       done();
 
     });
@@ -137,7 +137,7 @@ describe('Cell', () => {
     // Then
     const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
 
-    expect(result).toEqual({complete: false, value: 1, valueEvent: ValueEventType.UNSET});
+    expect(result).toEqual({complete: false, value: 1, valueEvent: ValueOriginType.UNSET});
     done();
   });
 
@@ -153,7 +153,7 @@ describe('Cell', () => {
     // Then
     const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
 
-    expect(result).toEqual({complete: true, value: 2, valueEvent: ValueEventType.EXPLICIT});
+    expect(result).toEqual({complete: true, value: 2, valueEvent: ValueOriginType.EXPLICIT});
     done();
   });
 
