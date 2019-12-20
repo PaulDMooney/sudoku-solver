@@ -19,7 +19,7 @@ describe('Cell', () => {
       const toEliminate = [2, 3, 4, 5, 6, 7, 8, 9];
 
       // When
-      toEliminate.forEach(item => cell.eliminateOption(item));
+      toEliminate.forEach(item => cell.eliminatePossibility(item));
 
       cell.cellStatus.subscribe(result => {
 
@@ -50,7 +50,7 @@ describe('Cell', () => {
       // const expectedResult = 1;
       const toEliminate = 5;
 
-      cell.optionsChange.subscribe((options) => {
+      cell.possibilitiesChange.subscribe((options) => {
 
         // Then
         expect(options).not.toContain(toEliminate);
@@ -58,7 +58,7 @@ describe('Cell', () => {
       })
 
       // When
-      cell.eliminateOption(toEliminate)
+      cell.eliminatePossibility(toEliminate)
 
     })
   });
@@ -82,7 +82,7 @@ describe('Cell', () => {
 
       // Given
       const explicitValue = 5;
-      cell.eliminateOption(explicitValue);
+      cell.eliminatePossibility(explicitValue);
 
       // When / Then
       expect( () => cell.setValue(explicitValue)).toThrow(UnexpectedValue);
@@ -123,7 +123,7 @@ describe('Cell', () => {
       // Given
       const cellOptions = [1,2];
       const simpleCell = new Cell(cellOptions);
-      simpleCell.eliminateOption(2); // At this point the cell will have a DERIVED value of 1.
+      simpleCell.eliminatePossibility(2); // At this point the cell will have a DERIVED value of 1.
 
       // When / Then
       expect(() => simpleCell.unsetValue()).toThrow(UnsupportedOperation);
@@ -139,7 +139,7 @@ describe('Cell', () => {
       cell.setValue(5);
 
       // When / Then
-      expect(() => cell.addOption(explicitValue)).toThrow(UnexpectedValue);
+      expect(() => cell.addPossibility(explicitValue)).toThrow(UnexpectedValue);
     });
   });
 
@@ -147,10 +147,10 @@ describe('Cell', () => {
 
     // Given
     const simpleCell = new Cell([1, 2]);
-    simpleCell.eliminateOption(2); // Will have derived value of 1
+    simpleCell.eliminatePossibility(2); // Will have derived value of 1
 
     // When
-    simpleCell.addOption(2);
+    simpleCell.addPossibility(2);
 
     // Then
     const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
@@ -166,7 +166,7 @@ describe('Cell', () => {
     simpleCell.setValue(2);
 
     // When
-    simpleCell.addOption(1);
+    simpleCell.addPossibility(1);
 
     // Then
     const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
@@ -193,7 +193,7 @@ describe('Cell', () => {
 
       // Given
       const simpleCell = new Cell([1,2]);
-      simpleCell.eliminateOption(1);
+      simpleCell.eliminatePossibility(1);
 
       // When
       const result = simpleCell.canSetValue(1);

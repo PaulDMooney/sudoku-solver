@@ -70,12 +70,12 @@ describe('CellContainer', () => {
     expect(() => cells[2].setValue(4)).toThrowError();
   });
 
-  it('should notify other cells of options eliminated from the container', () => {
+  it('should notify other cells of possibilities eliminated from the container', () => {
 
     // Given
     const cell1 = new Cell();
     const cell2 = new Cell();
-    const cell2Spy = jest.spyOn(cell2, 'eliminateOption');
+    const cell2Spy = jest.spyOn(cell2, 'eliminatePossibility');
     const cellContainer = new CellContainer([cell1, cell2]);
     const setValue = 4;
 
@@ -86,12 +86,12 @@ describe('CellContainer', () => {
     expect(cell2Spy).toHaveBeenCalledWith(setValue);
   });
 
-  it('should not notify originating cell of option eliminated from the container', () => {
+  it('should not notify originating cell of possibility eliminated from the container', () => {
 
     // Given
     const cell1 = new Cell();
     const cell2 = new Cell();
-    const cell1Spy = jest.spyOn(cell1, 'eliminateOption');
+    const cell1Spy = jest.spyOn(cell1, 'eliminatePossibility');
     const cellContainer = new CellContainer([cell1, cell2]);
     const setValue = 4;
 
@@ -102,12 +102,12 @@ describe('CellContainer', () => {
     expect(cell1Spy).not.toHaveBeenCalledWith(setValue);
   });
 
-  it('should notify cells of options made available to the container again', () => {
+  it('should notify cells of possibility made available to the container again', () => {
 
     // Given
     const cell1 = new Cell();
     const cell2 = new Cell();
-    const cell2Spy = jest.spyOn(cell2, 'addOption');
+    const cell2Spy = jest.spyOn(cell2, 'addPossibility');
     const cellContainer = new CellContainer([cell1, cell2]);
     const setValue = 4;
     cell1.setValue(setValue);
@@ -119,7 +119,7 @@ describe('CellContainer', () => {
     expect(cell2Spy).toHaveBeenCalledWith(setValue);
   });
 
-  it('should find cells with matching options and eliminate those options from other cells', () => {
+  it('should find cells with matching possibilities and eliminate those possibilities from other cells', () => {
 
     // Given
     const options = [1,2,3,4];
@@ -129,16 +129,16 @@ describe('CellContainer', () => {
     const cell4 = new Cell(options);
     const cellContainer = new CellContainer([cell1, cell2, cell3, cell4]);
 
-    cell1.eliminateOption(3);
-    cell1.eliminateOption(4);
-    cell2.eliminateOption(3);
+    cell1.eliminatePossibility(3);
+    cell1.eliminatePossibility(4);
+    cell2.eliminatePossibility(3);
 
     // When : Eliminating 4th option makes cell1 and cell2 have an option list of [1,2]. Triggers change.
-    cell2.eliminateOption(4);
+    cell2.eliminatePossibility(4);
 
     // Then
-    expect(cell3.currentOptions).toEqual([3,4]);
-    expect(cell4.currentOptions).toEqual([3,4]);
+    expect(cell3.currentPossibilities).toEqual([3,4]);
+    expect(cell4.currentPossibilities).toEqual([3,4]);
 
 
   });

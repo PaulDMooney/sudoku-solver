@@ -21,53 +21,53 @@ export enum ValueChangeType {
 }
 export class Cell {
 
-  private options: number[];
+  private possibilities: number[];
 
   private cellStatus$: Subject<CellStatus> = new BehaviorSubject({complete: false});
 
-  private optionsChange$: Subject<number[]> = new Subject();
+  private possibilitiesChange$: Subject<number[]> = new Subject();
 
   private value?: number;
 
   private valueOrigin?: ValueOriginType;
 
   constructor(allOptions: number[] = DEFAULT_STARTING_OPTIONS) {
-    this.options = [...allOptions];
+    this.possibilities = [...allOptions];
   }
 
   get currentValue(): number {
     return this.value;
   }
 
-  get currentOptions(): number[] {
-    return this.options;
+  get currentPossibilities(): number[] {
+    return this.possibilities;
   }
 
-  eliminateOption(option: number): void {
+  eliminatePossibility(option: number): void {
 
     // Needed check to prevent infinite recursion
-    if (this.options.length <= 1 || !this.options.includes(option)) {
+    if (this.possibilities.length <= 1 || !this.possibilities.includes(option)) {
       return;
     }
 
-    this.options = this.options.filter(item => item !== option);
-    if (!this.value && this.options.length === 1) {
-      this.setValueAndOrigin(this.options[0], ValueOriginType.DERIVED);
+    this.possibilities = this.possibilities.filter(item => item !== option);
+    if (!this.value && this.possibilities.length === 1) {
+      this.setValueAndOrigin(this.possibilities[0], ValueOriginType.DERIVED);
     }
-    this.optionsChange$.next(this.options);
+    this.possibilitiesChange$.next(this.possibilities);
   }
 
-  addOption(newOption: number): any {
+  addPossibility(newPossibility: number): any {
 
-    if (this.value === newOption) {
-      throw new UnexpectedValue(`${newOption} can not be added because it is already the value of this cell`);
+    if (this.value === newPossibility) {
+      throw new UnexpectedValue(`${newPossibility} can not be added because it is already the value of this cell`);
     }
 
-    if (this.options.includes(newOption)) {
+    if (this.possibilities.includes(newPossibility)) {
       return;
     }
 
-    this.options.push(newOption);
+    this.possibilities.push(newPossibility);
     if (this.valueOrigin === ValueOriginType.DERIVED) {
       this._unsetValue();
     }
@@ -78,7 +78,7 @@ export class Cell {
   }
 
   canSetValue(value: number) {
-    return this.options.includes(value);
+    return this.possibilities.includes(value);
   }
 
   unsetValue(): void {
@@ -110,8 +110,8 @@ export class Cell {
     }
 
     const unsetEvent: CellStatus = {complete: false, value: this.value, valueEvent: ValueOriginType.UNSET};
-    if (!this.options.includes(this.value)) {
-      this.options.push(this.value);
+    if (!this.possibilities.includes(this.value)) {
+      this.possibilities.push(this.value);
     }
     this.value = null;
     this.valueOrigin = null;
@@ -127,8 +127,8 @@ export class Cell {
     return this.cellStatus$;
   }
 
-  get optionsChange(): Observable<number[]> {
-    return this.optionsChange$;
+  get possibilitiesChange(): Observable<number[]> {
+    return this.possibilitiesChange$;
   }
 }
 

@@ -75,7 +75,7 @@ describe('SudokuSolverInputCellComponent', () => {
 
     // When
     component.cell = cell;
-    cell.eliminateOption(2); // derived value should be 1
+    cell.eliminatePossibility(2); // derived value should be 1
     fixture.detectChanges();
 
     // Then
@@ -150,7 +150,7 @@ describe('SudokuSolverInputCellComponent', () => {
     const cell = new Cell([1, 2, 3]);
     const cellSpy = spyOn(cell, 'setValue');
     component.cell = cell;
-    cell.eliminateOption(3); // Will be an unexpected value now.
+    cell.eliminatePossibility(3); // Will be an unexpected value now.
     fixture.detectChanges();
 
     // When
