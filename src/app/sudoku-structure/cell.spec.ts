@@ -43,6 +43,24 @@ describe('Cell', () => {
       done();
 
     });
+
+    it('should emit options changed event', async done => {
+
+      // Given
+      // const expectedResult = 1;
+      const toEliminate = 5;
+
+      cell.optionsChange.subscribe((options) => {
+
+        // Then
+        expect(options).not.toContain(toEliminate);
+        done();
+      })
+
+      // When
+      cell.eliminateOption(toEliminate)
+
+    })
   });
 
   describe('setValue', () => {
@@ -183,6 +201,6 @@ describe('Cell', () => {
       // Then
       expect(result).toBe(false);
 
-    })
-  })
+    });
+  });
 });

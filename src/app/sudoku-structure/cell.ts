@@ -25,6 +25,8 @@ export class Cell {
 
   private cellStatus$: Subject<CellStatus> = new BehaviorSubject({complete: false});
 
+  private optionsChange$: Subject<number[]> = new Subject();
+
   private value?: number;
 
   private valueOrigin?: ValueOriginType;
@@ -44,7 +46,7 @@ export class Cell {
   eliminateOption(option: number): void {
 
     // Needed check to prevent infinite recursion
-    if (this.options.length <= 1 ) {
+    if (this.options.length <= 1 || !this.options.includes(option)) {
       return;
     }
 
@@ -52,6 +54,7 @@ export class Cell {
     if (!this.value && this.options.length === 1) {
       this.setValueAndOrigin(this.options[0], ValueOriginType.DERIVED);
     }
+    this.optionsChange$.next(this.options);
   }
 
   addOption(newOption: number): any {
@@ -122,6 +125,10 @@ export class Cell {
 
   get cellStatus(): Observable<CellStatus> {
     return this.cellStatus$;
+  }
+
+  get optionsChange(): Observable<number[]> {
+    return this.optionsChange$;
   }
 }
 

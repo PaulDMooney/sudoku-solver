@@ -119,4 +119,28 @@ describe('CellContainer', () => {
     expect(cell2Spy).toHaveBeenCalledWith(setValue);
   });
 
+  it('should find cells with matching options and eliminate those options from other cells', () => {
+
+    // Given
+    const options = [1,2,3,4];
+    const cell1 = new Cell(options);
+    const cell2 = new Cell(options);
+    const cell3 = new Cell(options);
+    const cell4 = new Cell(options);
+    const cellContainer = new CellContainer([cell1, cell2, cell3, cell4]);
+
+    cell1.eliminateOption(3);
+    cell1.eliminateOption(4);
+    cell2.eliminateOption(3);
+
+    // When : Eliminating 4th option makes cell1 and cell2 have an option list of [1,2]. Triggers change.
+    cell2.eliminateOption(4);
+
+    // Then
+    expect(cell3.currentOptions).toEqual([3,4]);
+    expect(cell4.currentOptions).toEqual([3,4]);
+
+
+  });
+
 });

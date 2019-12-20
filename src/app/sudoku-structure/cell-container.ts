@@ -7,7 +7,10 @@ export class CellContainer {
 
   constructor(private cells: Cell[]) {
 
-    cells.forEach(cell => subscribeToValueSetEvent(cell, cells));
+    cells.forEach(cell => {
+      subscribeToValueSetEvent(cell, cells);
+      subscribeToOptionsChangeEvent(cell, cells);
+    });
 
     // Emit Event when all cells are complete.
     combineLatest(cells.map(cell => cell.cellStatus)).subscribe((values: CellStatus[]) => {
@@ -28,25 +31,66 @@ export class CellContainer {
 
 }
 
-function subscribeToValueSetEvent(cell: Cell, cells: Cell[]) {
+function subscribeToValueSetEvent(cell: Cell, allCells: Cell[]) {
+  const otherCells = allCells.filter(value => value !== cell);
+  cell.cellStatus.subscribe(status => changeOtherCellOptions(status, otherCells));
+}
 
-  cell.cellStatus.subscribe(status => {
-    if (status.complete) {
-      // console.log('Notifying cells of final value set', status);
-      cells.forEach(otherCell => {
-        if (otherCell !== cell) {
-          otherCell.eliminateOption(status.value);
-        }
+function changeOtherCellOptions(status: CellStatus, otherCells: Cell[]) {
+  if (status.complete) {
+    // console.log('Notifying cells of final value set', status);
+    otherCells.forEach(otherCell => {
+      otherCell.eliminateOption(status.value);
+    });
+  } else {
+    if (status.valueEvent === ValueOriginType.UNSET) {
+      // console.log('Notifying cells of re-added option', status);
+      otherCells.forEach(otherCell => {
+        otherCell.addOption(status.value);
       });
-    } else {
-      if (status.valueEvent === ValueOriginType.UNSET) {
-        // console.log('Notifying cells of re-added option', status);
-        cells.forEach(otherCell => {
-          if (otherCell !== cell) {
-            otherCell.addOption(status.value);
-          }
-        });
-      }
     }
+  }
+}
+
+function subscribeToOptionsChangeEvent(cell: Cell, allCells: Cell[]) {
+
+  cell.optionsChange.subscribe(() => {
+    const allCellsByOptionsMap = mapCellsByOptions(allCells);
+    const cellsWithLikeOptions = extractGroupsOfMatchingOptions(allCellsByOptionsMap.values());
+    cellsWithLikeOptions.forEach(likeCells => {
+      const options = likeCells[0].currentOptions;
+      const otherCells = allCells.filter(value => !likeCells.includes(value));
+      otherCells.forEach(otherCell => {
+        options.forEach(option => {
+          otherCell.eliminateOption(option);
+        });
+      });
+    });
   });
+
+}
+
+function mapCellsByOptions(cells: Cell[]) {
+  const cellsByOptionsMap = new Map<string, Cell[]>();
+  cells.forEach(cell => {
+
+    // For this to work, options need to be ordered.
+    const optionsKey = cell.currentOptions.toString();
+    if (!cellsByOptionsMap.has(optionsKey)) {
+      cellsByOptionsMap.set(optionsKey, []);
+    }
+    cellsByOptionsMap.get(optionsKey).push(cell);
+  });
+  return cellsByOptionsMap;
+}
+
+function extractGroupsOfMatchingOptions(cellGroups:Iterable<Cell[]>): Cell[][] {
+  const toReturn = [];
+  for (const cellGroup of cellGroups) {
+    if (cellGroup.length === cellGroup[0].currentOptions.length) {
+      toReturn.push(cellGroup);
+    }
+  }
+  return toReturn;
+
 }
