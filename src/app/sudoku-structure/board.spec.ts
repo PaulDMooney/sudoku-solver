@@ -67,6 +67,35 @@ describe('Board', () => {
     done();
 
   });
+  it('should solve', async (done) => {
+
+    // Given
+    const board = boardFactory();
+    const puzzle = [
+      [5, null, null, 1],
+      [null, null, 7, null, null, null, 8, 2],
+      [null, 1, null, null, 2, 4, null, 3],
+      [null, null, null, null, null, null, 1],
+      [null, null, 9, 5, null, 8, 7],
+      [null, null, 3],
+      [null, 8, null, 6, 4, null, null, 1 ],
+      [null, 9, 5, null, null, null, 6],
+      [null, null, null, null, null, 5, null, null, 8]
+  ];
+
+    puzzle.forEach((row, rowIndex) => {
+      row.forEach((cell, columnIndex) => {
+        if (cell) {
+          board.grid[rowIndex][columnIndex].setValue(cell);
+        }
+      });
+    });
+
+    const result = await board.boardSolved.toPromise();
+    expect(result).toBe(true);
+    done();
+
+  });
 });
 
 describe('BoardFactory', () => {

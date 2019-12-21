@@ -25,25 +25,7 @@ import { bindCallback } from 'rxjs';
       </ng-template>
     </div>
   `,
-  styles: [
-    `.cell-container {
-    border: 1px solid;
-    width: 5rem;
-    height: 4rem;
-  }`,
-  `ul.options-list {
-    padding-left:0;
-    margin:0;
-    display: flex;
-    flex-direction: row;
-    flex-wrap:wrap;
-    list-style-type: none;
-
-  }`,
-  `ul.options-list li:not(:last-child)::after {
-    content: ','
-  }`
-]
+  styleUrls: ['./sudoku-solver-input-cell.component.scss']
 })
 export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
 

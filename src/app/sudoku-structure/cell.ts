@@ -90,7 +90,7 @@ export class Cell {
     this._unsetValue();
   }
 
-  private setValueAndOrigin(explicitValue: number, valueOrigin: ValueOriginType): void {
+  setValueAndOrigin(explicitValue: number, valueOrigin: ValueOriginType): void {
 
     // Validate that the value was an available option.
     if (!this.canSetValue(explicitValue)) {

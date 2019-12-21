@@ -1,12 +1,42 @@
 .board {
   display: flex;
-  flex-direction: row;
-}
-.column {
-  display: inline-flex;
   flex-direction: column;
+}
+.row {
+  display: inline-flex;
+  flex-direction: row;
 }
 
 ::ng-deep .cell input {
   width: 2rem;
+}
+
+.row {
+  .cell {
+    border: 1px solid rgba(0,0,0,0.15);
+    &:last-child {
+      border-right:1px solid rgba(0,0,0,1);;
+    }
+    &:first-child {
+      border-left: 1px solid rgba(0,0,0,1);;
+    }
+  }
+  &:first-child {
+    .cell {
+      border-top: 1px solid rgba(0,0,0,1);
+    }
+  }
+  &:last-child {
+    .cell {
+      border-bottom: 1px solid rgba(0,0,0,1);;
+    }
+  }
+  &:nth-child(3n) {
+    .cell {
+      border-bottom: 1px solid rgba(0,0,0,1);;
+    }
+  }
+  .cell:nth-child(3n) {
+    border-right: 1px solid rgba(0,0,0,1);;
+  }
 }
