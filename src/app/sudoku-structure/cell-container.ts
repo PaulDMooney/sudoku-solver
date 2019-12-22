@@ -1,9 +1,14 @@
 import { Cell, CellStatus, ValueOriginType } from './cell';
 import { Subject, ReplaySubject, forkJoin, Observable, combineLatest, BehaviorSubject } from 'rxjs';
+import { bufferToggle, mergeAll, buffer, concatAll, timeout, combineAll } from 'rxjs/operators';
+import { matchCellsWithLikeOptions } from './match-cells';
+import { deriveCellsWithUniqueOptions } from './derive-cells';
 
 export class CellContainer {
 
   private containerSolved$: Subject<boolean> = new BehaviorSubject(false);
+
+  private bufferRelease$: Subject<boolean> = new Subject();
 
   constructor(private cells: Cell[]) {
 
@@ -28,7 +33,6 @@ export class CellContainer {
   public get containerSolvedEvent(): Observable<boolean> {
     return this.containerSolved$;
   }
-
 }
 
 function subscribeToValueSetEvent(cell: Cell, allCells: Cell[]) {
@@ -55,79 +59,7 @@ function changeOtherCellOptions(status: CellStatus, otherCells: Cell[]) {
 function subscribeToOptionsChangeEvent(cell: Cell, allCells: Cell[]) {
 
   cell.optionsChange.subscribe(() => {
-    const unsolvedCells = allCells.filter(value => !value.currentValue);
-    matchCellsWithLikeOptions(unsolvedCells);
-    deriveCellsWithUniqueOptions(unsolvedCells);
+    matchCellsWithLikeOptions(allCells);
+    deriveCellsWithUniqueOptions(allCells);
   });
-
-}
-
-function deriveCellsWithUniqueOptions(cells: Cell[]) {
-  const allCellsByOptionValueMap = mapCellsByOptionValue(cells);
-  for (const entry of allCellsByOptionValueMap.entries()) {
-    if (entry[1].length === 1) {
-      cells.forEach(cell => {
-        if (cell !== entry[1][0]) {
-          cell.setValueAndOrigin(entry[0], ValueOriginType.DERIVED);
-        }
-      });
-    }
-  }
-
-}
-
-function matchCellsWithLikeOptions(unsolvedCells: Cell[]) {
-  const allCellsByOptionsMap = mapCellsByOptions(unsolvedCells);
-  const cellsWithLikeOptions = extractGroupsOfMatchingOptions(allCellsByOptionsMap.values());
-  cellsWithLikeOptions.forEach(likeCells => {
-    const options = likeCells[0].currentOptions;
-    const otherCells = unsolvedCells.filter(value => !likeCells.includes(value));
-    otherCells.forEach(otherCell => {
-      options.forEach(option => {
-        otherCell.eliminateOption(option);
-      });
-    });
-  });
-}
-
-function mapCellsByOptionValue(cells: Cell[]): Map<number, Cell[]> {
-  const cellsByOptionValueMap = new Map<number, Cell[]>();
-  cells.forEach(cell => {
-    cell.currentOptions.forEach(optionValue => {
-      if (!cellsByOptionValueMap.has(optionValue)) {
-        cellsByOptionValueMap.set(optionValue, []);
-      }
-      cellsByOptionValueMap.get(optionValue).push(cell);
-    });
-  });
-  return cellsByOptionValueMap;
-}
-
-function mapCellsByOptions(cells: Cell[]) {
-  const cellsByOptionsMap = new Map<string, Cell[]>();
-  cells.forEach(cell => {
-
-    // TODO: Redundant?
-    if (cell.currentValue) {
-      return;
-    }
-    // For this to work, options need to be ordered.
-    const optionsKey = cell.currentOptions.toString();
-    if (!cellsByOptionsMap.has(optionsKey)) {
-      cellsByOptionsMap.set(optionsKey, []);
-    }
-    cellsByOptionsMap.get(optionsKey).push(cell);
-  });
-  return cellsByOptionsMap;
-}
-
-function extractGroupsOfMatchingOptions(cellGroups:Iterable<Cell[]>): Cell[][] {
-  const toReturn = [];
-  for (const cellGroup of cellGroups) {
-    if (cellGroup.length === cellGroup[0].currentOptions.length) {
-      toReturn.push(cellGroup);
-    }
-  }
-  return toReturn;
-
 }

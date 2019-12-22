@@ -7,9 +7,6 @@ import { bindCallback } from 'rxjs';
   selector: 'app-sudoku-solver-input-cell',
   template: `
     <div class="cell-container" *ngIf="(cell.cellStatus | async) as cellStatus">
-      <ul class="options-list">
-        <li *ngFor="let option of cell?.currentOptions" [innerHTML]="option"></li>
-      </ul>
 
       <input
         *ngIf="!cellStatus.valueEvent || cellStatus.valueEvent !== valueEventType.DERIVED; else readOnlyView"
@@ -23,6 +20,10 @@ import { bindCallback } from 'rxjs';
       <ng-template #readOnlyView>
         <span [attr.data-display-value]="cell.currentValue">{{cell.currentValue}}</span>
       </ng-template>
+
+      <ul class="options-list">
+        <li *ngFor="let option of cell?.currentOptions" [innerHTML]="option"></li>
+      </ul>
     </div>
   `,
   styleUrls: ['./sudoku-solver-input-cell.component.scss']
