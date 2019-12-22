@@ -1,5 +1,5 @@
 import { Observable, Subject, ReplaySubject, BehaviorSubject } from 'rxjs';
-import { skip, filter } from 'rxjs/operators';
+import { skip, filter, throttle } from 'rxjs/operators';
 
 export const DEFAULT_STARTING_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -25,7 +25,7 @@ export class Cell {
 
   private cellStatus$: Subject<CellStatus> = new BehaviorSubject({complete: false});
 
-  private optionsChange$: Subject<number[]> = new Subject();
+  private optionsChangeTrigger$: Subject<number[]> = new Subject();
 
   private value?: number;
 
@@ -54,7 +54,7 @@ export class Cell {
     if (!this.value && this.options.length === 1) {
       this.setValueAndOrigin(this.options[0], ValueOriginType.DERIVED);
     }
-    this.optionsChange$.next(this.options);
+    this.optionsChangeTrigger$.next(this.options);
   }
 
   addOption(newOption: number): any {
@@ -74,7 +74,15 @@ export class Cell {
   }
 
   setValue(explicitValue: number): void {
+
+    const newOptions = this.options.filter(value => value === explicitValue);
+    if (newOptions.toString() !== this.options.toString()) {
+      this.options = newOptions;
+      // this.optionsChangeTrigger$.next(this.options);
+    }
+
     this.setValueAndOrigin(explicitValue, ValueOriginType.EXPLICIT);
+
   }
 
   canSetValue(value: number) {
@@ -128,7 +136,7 @@ export class Cell {
   }
 
   get optionsChange(): Observable<number[]> {
-    return this.optionsChange$;
+    return this.optionsChangeTrigger$;
   }
 }
 
