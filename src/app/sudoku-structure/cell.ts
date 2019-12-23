@@ -75,12 +75,6 @@ export class Cell {
 
   setValue(explicitValue: number): void {
 
-    const newOptions = this.options.filter(value => value === explicitValue);
-    if (newOptions.toString() !== this.options.toString()) {
-      this.options = newOptions;
-      // this.optionsChangeTrigger$.next(this.options);
-    }
-
     this.setValueAndOrigin(explicitValue, ValueOriginType.EXPLICIT);
 
   }
@@ -109,6 +103,11 @@ export class Cell {
     this.value = explicitValue;
     this.valueOrigin = valueOrigin;
     this.emitValueSet(this.value, this.valueOrigin);
+
+    const newOptions = this.options.filter(value => value === explicitValue);
+    if (newOptions.toString() !== this.options.toString()) {
+      this.options = newOptions;
+    }
 
   }
 
