@@ -1,3 +1,3 @@
-function findVectorWithUniqueValue() {
+export function findVectorWithUniqueValue() {
 
 }

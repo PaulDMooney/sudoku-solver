@@ -1,6 +1,7 @@
 import { CellContainer } from './cell-container';
 import { ReplaySubject, Observable, Subject, forkJoin, combineLatest, BehaviorSubject } from 'rxjs';
 import { Cell } from './cell';
+import { Square } from './square';
 
 export class Board {
 
@@ -46,7 +47,7 @@ export function boardFactory(squareSize: number = 3): Board {
 
   const rows = createCellContainersFromRows(grid);
   const columns = createCellContainersFromColumns(grid);
-  const squares = createCellContainersFromSquares(grid, squareSize);
+  const squares = createCellContainersFromSquares(grid, squareSize, rows, columns);
 
   const toReturn = new Board([...rows, ...columns, ...squares], grid);
   return toReturn;
@@ -68,27 +69,32 @@ function createCellContainersFromColumns(grid: Cell[][]): CellContainer[] {
   return toReturn;
 }
 
-function createCellContainersFromSquares(grid: Cell[][], squareSize: number): CellContainer[] {
+function createCellContainersFromSquares(grid: Cell[][], squareSize: number, rows:CellContainer[], columns: CellContainer[]): Square[] {
 
   const toReturn = [];
 
   for (let rowGroup = 0; rowGroup < squareSize; rowGroup++) {
+    const overlappingRows = rows.slice(rowGroup * squareSize, rowGroup * squareSize + squareSize).map(row => [row]);
     for (let columnGroup = 0; columnGroup < squareSize; columnGroup++) {
       const cells = getSquare(grid, rowGroup, columnGroup, squareSize);
-      toReturn.push(new CellContainer(cells));
+      const overlappingColumns = rows.slice(columnGroup * squareSize, columnGroup * squareSize + squareSize).map(column => [column]);
+      toReturn.push(new Square(cells, overlappingRows, overlappingColumns));
     }
   }
 
   return toReturn;
 }
 
-function getSquare(grid: Cell[][], rowGroup: number, columnGroup: number, squareSize: number): Cell[] {
+function getSquare(grid: Cell[][], rowGroup: number, columnGroup: number, squareSize: number): Cell[][] {
 
-  const cells = [];
-  for (let row = rowGroup * squareSize; row < rowGroup * squareSize + squareSize; row++) {
-    for (let column = columnGroup * squareSize; column < columnGroup * squareSize + squareSize; column++) {
-      cells.push(grid[row][column]);
+  const squareGrid: Cell[][] = [];
+  for (let squareRow = 0; squareRow < squareSize; squareRow++) {
+    const row = rowGroup * squareSize + squareRow;
+    squareGrid.push([]);
+    for (let squareColumn = 0; squareColumn < squareSize; squareColumn++) {
+      const column = columnGroup * squareSize + squareColumn;
+      squareGrid[squareRow].push(grid[row][column]);
     }
   }
-  return cells;
+  return squareGrid;
 }
