@@ -6,6 +6,12 @@ export class Board {
 
   boardSolved$: Subject<boolean> = new BehaviorSubject(false);
 
+  /**
+   *
+   * @param cellContainers
+   * @param grid 2D array of cells representing the grid. The first dimension is rows,
+   * The second dimension is columns.
+   */
   constructor(private cellContainers: CellContainer[], public grid: Cell[][]) {
 
     combineLatest(cellContainers.map(cellContainer => cellContainer.containerSolvedEvent))
@@ -46,18 +52,18 @@ export function boardFactory(squareSize: number = 3): Board {
   return toReturn;
 }
 
-function createCellContainersFromColumns(grid: Cell[][]): CellContainer[] {
-  return grid.map((column: Cell[]) => new CellContainer(column));
+function createCellContainersFromRows(grid: Cell[][]): CellContainer[] {
+  return grid.map((row: Cell[]) => new CellContainer(row));
 }
 
-function createCellContainersFromRows(grid: Cell[][]): CellContainer[] {
+function createCellContainersFromColumns(grid: Cell[][]): CellContainer[] {
   const toReturn = [];
   for (let i = 0; i < grid.length; i++) {
-    const row = [];
+    const column = [];
     for (let j = 0; j < grid[i].length; j++) {
-      row.push(grid[j][i]);
+      column.push(grid[j][i]);
     }
-    toReturn.push(new CellContainer(row));
+    toReturn.push(new CellContainer(column));
   }
   return toReturn;
 }
@@ -66,9 +72,9 @@ function createCellContainersFromSquares(grid: Cell[][], squareSize: number): Ce
 
   const toReturn = [];
 
-  for (let xSquares = 0; xSquares < squareSize; xSquares++) {
-    for (let ySquares = 0; ySquares < squareSize; ySquares++) {
-      const cells = getSquare(grid, xSquares, ySquares, squareSize);
+  for (let rowGroup = 0; rowGroup < squareSize; rowGroup++) {
+    for (let columnGroup = 0; columnGroup < squareSize; columnGroup++) {
+      const cells = getSquare(grid, rowGroup, columnGroup, squareSize);
       toReturn.push(new CellContainer(cells));
     }
   }
@@ -76,12 +82,12 @@ function createCellContainersFromSquares(grid: Cell[][], squareSize: number): Ce
   return toReturn;
 }
 
-function getSquare(grid: Cell[][], xSquare: number, ySquare: number, squareSize: number): Cell[] {
+function getSquare(grid: Cell[][], rowGroup: number, columnGroup: number, squareSize: number): Cell[] {
 
   const cells = [];
-  for (let i = xSquare * squareSize; i < xSquare * squareSize + squareSize; i++) {
-    for (let j = ySquare * squareSize; j < ySquare * squareSize + squareSize; j++) {
-      cells.push(grid[i][j]);
+  for (let row = rowGroup * squareSize; row < rowGroup * squareSize + squareSize; row++) {
+    for (let column = columnGroup * squareSize; column < columnGroup * squareSize + squareSize; column++) {
+      cells.push(grid[row][column]);
     }
   }
   return cells;
