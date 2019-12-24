@@ -2,6 +2,7 @@ import { CellContainer } from './cell-container';
 import { ReplaySubject, Observable, Subject, forkJoin, combineLatest, BehaviorSubject } from 'rxjs';
 import { Cell } from './cell';
 import { Square } from './square';
+import { transposeGrid } from './transpose-grid';
 
 export class Board {
 
@@ -58,15 +59,19 @@ function createCellContainersFromRows(grid: Cell[][]): CellContainer[] {
 }
 
 function createCellContainersFromColumns(grid: Cell[][]): CellContainer[] {
-  const toReturn = [];
-  for (let i = 0; i < grid.length; i++) {
-    const column = [];
-    for (let j = 0; j < grid[i].length; j++) {
-      column.push(grid[j][i]);
-    }
-    toReturn.push(new CellContainer(column));
-  }
-  return toReturn;
+  const transposedGrid = transposeGrid(grid);
+  return createCellContainersFromRows(transposedGrid);
+
+  // TODO: Verify and remove
+  // const toReturn = [];
+  // for (let i = 0; i < grid.length; i++) {
+  //   const column = [];
+  //   for (let j = 0; j < grid[i].length; j++) {
+  //     column.push(grid[j][i]);
+  //   }
+  //   toReturn.push(new CellContainer(column));
+  // }
+  // return toReturn;
 }
 
 function createCellContainersFromSquares(grid: Cell[][], squareSize: number, rows:CellContainer[], columns: CellContainer[]): Square[] {

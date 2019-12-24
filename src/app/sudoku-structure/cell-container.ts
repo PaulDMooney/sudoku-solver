@@ -8,9 +8,7 @@ export class CellContainer {
 
   private containerSolved$: Subject<boolean> = new BehaviorSubject(false);
 
-  private bufferRelease$: Subject<boolean> = new Subject();
-
-  constructor(private cells: Cell[]) {
+  constructor(public cells: Cell[]) {
 
     cells.forEach(cell => {
       subscribeToValueSetEvent(cell, cells);
