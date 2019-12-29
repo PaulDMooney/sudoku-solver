@@ -29,6 +29,9 @@ export class BasicSudokuSolverFormComponent implements OnInit, OnChanges {
 
   }
 
+  kick() {
+    this.board.pantsKicker$.next(true);
+  }
 
 }
 

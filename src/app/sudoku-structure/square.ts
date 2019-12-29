@@ -1,6 +1,8 @@
 import { CellContainer } from './cell-container';
 import { Cell } from './cell';
 import { findRowsWithUniqueValues, findColumnsWithUniqueValues, IndexValuePair } from './derive-squares-cells';
+import { delay, debounceTime, debounce, throttle } from 'rxjs/operators';
+import { combineLatest, Observable } from 'rxjs';
 
 interface OverlappingContainer {
   cellContainer: CellContainer;
@@ -16,22 +18,26 @@ export class Square extends CellContainer {
    * Second dimension is how many rows there are (usually this is 1 but in a super sudoku this could be 2)
    * @param overLappingColumns
    */
-  constructor(private grid: Cell[][], private overlappingRows: CellContainer[][], private overLappingColumns: CellContainer[][]) {
+  constructor(private grid: Cell[][], private overlappingRows: CellContainer[][],
+    private overLappingColumns: CellContainer[][], private trigger$: Observable<any>) {
 
     super(flattenGrid(grid));
 
-    // this.cells.forEach(cell => this.subscribeToOptionsChange(cell));
+    this.trigger$.subscribe(this.resolveVectorsWithUniqueValues);
+    // combineLatest(this.cells.map(cell => cell.optionsChange))
+    //   .pipe(throttle(() => this.trigger$)).subscribe(this.resolveVectorsWithUniqueValues);
+
+    // combineLatest(this.cells.map(cell => cell.cellStatus))
+    //   .pipe(throttle(() => this.trigger$)).subscribe(this.resolveVectorsWithUniqueValues);
   }
 
-  private subscribeToOptionsChange(cell: Cell) {
-    cell.optionsChange.subscribe(() => {
-      const uniqueRowValues = findRowsWithUniqueValues(this.grid);
-      uniqueRowValues.forEach(this.notifyVectorsFunction(this.overlappingRows));
 
-      const uniqueColumnValues = findColumnsWithUniqueValues(this.grid);
-      uniqueColumnValues.forEach(this.notifyVectorsFunction(this.overLappingColumns));
-    });
+  resolveVectorsWithUniqueValues = () => {
+    const uniqueRowValues = findRowsWithUniqueValues(this.grid);
+    uniqueRowValues.forEach(this.notifyVectorsFunction(this.overlappingRows));
 
+    const uniqueColumnValues = findColumnsWithUniqueValues(this.grid);
+    uniqueColumnValues.forEach(this.notifyVectorsFunction(this.overLappingColumns));
   }
 
   notifyVectorsFunction = (overlappingVectors: CellContainer[][]) => {

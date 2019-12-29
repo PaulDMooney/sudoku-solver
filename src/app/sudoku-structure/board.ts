@@ -14,7 +14,7 @@ export class Board {
    * @param grid 2D array of cells representing the grid. The first dimension is rows,
    * The second dimension is columns.
    */
-  constructor(private cellContainers: CellContainer[], public grid: Cell[][]) {
+  constructor(private cellContainers: CellContainer[], public grid: Cell[][], public pantsKicker$: Subject<any>) {
 
     combineLatest(cellContainers.map(cellContainer => cellContainer.containerSolvedEvent))
       .subscribe((statuses: boolean[]) => {
@@ -46,11 +46,12 @@ export function boardFactory(squareSize: number = 3): Board {
     }
   }
 
+  const pantsKicker$ = new Subject<any>();
   const rows = createCellContainersFromRows(grid);
   const columns = createCellContainersFromColumns(grid);
-  const squares = createCellContainersFromSquares(grid, squareSize, rows, columns);
+  const squares = createCellContainersFromSquares(grid, squareSize, rows, columns, pantsKicker$);
 
-  const toReturn = new Board([...rows, ...columns, ...squares], grid);
+  const toReturn = new Board([...rows, ...columns, ...squares], grid, pantsKicker$);
   return toReturn;
 }
 
@@ -61,20 +62,9 @@ function createCellContainersFromRows(grid: Cell[][]): CellContainer[] {
 function createCellContainersFromColumns(grid: Cell[][]): CellContainer[] {
   const transposedGrid = transposeGrid(grid);
   return createCellContainersFromRows(transposedGrid);
-
-  // TODO: Verify and remove
-  // const toReturn = [];
-  // for (let i = 0; i < grid.length; i++) {
-  //   const column = [];
-  //   for (let j = 0; j < grid[i].length; j++) {
-  //     column.push(grid[j][i]);
-  //   }
-  //   toReturn.push(new CellContainer(column));
-  // }
-  // return toReturn;
 }
 
-function createCellContainersFromSquares(grid: Cell[][], squareSize: number, rows:CellContainer[], columns: CellContainer[]): Square[] {
+function createCellContainersFromSquares(grid: Cell[][], squareSize: number, rows:CellContainer[], columns: CellContainer[], pantsKicker$: Observable<any>): Square[] {
 
   const toReturn = [];
 
@@ -82,8 +72,8 @@ function createCellContainersFromSquares(grid: Cell[][], squareSize: number, row
     const overlappingRows = rows.slice(rowGroup * squareSize, rowGroup * squareSize + squareSize).map(row => [row]);
     for (let columnGroup = 0; columnGroup < squareSize; columnGroup++) {
       const cells = getSquare(grid, rowGroup, columnGroup, squareSize);
-      const overlappingColumns = rows.slice(columnGroup * squareSize, columnGroup * squareSize + squareSize).map(column => [column]);
-      toReturn.push(new Square(cells, overlappingRows, overlappingColumns));
+      const overlappingColumns = columns.slice(columnGroup * squareSize, columnGroup * squareSize + squareSize).map(column => [column]);
+      toReturn.push(new Square(cells, overlappingRows, overlappingColumns, pantsKicker$));
     }
   }
 
