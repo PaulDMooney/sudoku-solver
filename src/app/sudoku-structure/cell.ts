@@ -1,5 +1,6 @@
-import { Observable, Subject, ReplaySubject, BehaviorSubject } from 'rxjs';
-import { skip, filter, throttle } from 'rxjs/operators';
+import { Observable, Subject, ReplaySubject, BehaviorSubject, empty, combineLatest, of } from 'rxjs';
+import { skip, filter, throttle, last } from 'rxjs/operators';
+import { CellContainer } from './cell-container';
 
 export const DEFAULT_STARTING_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -11,8 +12,7 @@ export interface CellStatus {
 
 export enum ValueOriginType {
   EXPLICIT,
-  DERIVED,
-  UNSET
+  DERIVED
 }
 
 export enum ValueChangeType {
@@ -31,6 +31,8 @@ export class Cell {
 
   private valueOrigin?: ValueOriginType;
 
+  private cellContainers: CellContainer[] = [];
+
   constructor(allOptions: number[] = DEFAULT_STARTING_OPTIONS) {
     this.options = [...allOptions];
   }
@@ -43,39 +45,32 @@ export class Cell {
     return this.options;
   }
 
-  eliminateOption(option: number): void {
+  registerCellContainer(cellContainer: CellContainer) {
+
+    // TODO: Use a Set instead
+    if (!this.cellContainers.includes(cellContainer)) {
+      this.cellContainers.push(cellContainer);
+    }
+  }
+
+  eliminateOption(option: number): Observable<any> {
 
     // Needed check to prevent infinite recursion
     if (this.options.length <= 1 || !this.options.includes(option)) {
-      return;
+      return of(true);
     }
 
     this.options = this.options.filter(item => item !== option);
     if (!this.value && this.options.length === 1) {
-      this.setValueAndOrigin(this.options[0], ValueOriginType.DERIVED);
+      return this.setValueAndOrigin(this.options[0], ValueOriginType.DERIVED);
     }
     this.optionsChangeTrigger$.next(this.options);
+    return of(true);
   }
 
-  addOption(newOption: number): any {
+  setValue(explicitValue: number): Observable<any> {
 
-    if (this.value === newOption) {
-      throw new UnexpectedValue(`${newOption} can not be added because it is already the value of this cell`);
-    }
-
-    if (this.options.includes(newOption)) {
-      return;
-    }
-
-    this.options.push(newOption);
-    if (this.valueOrigin === ValueOriginType.DERIVED) {
-      this._unsetValue();
-    }
-  }
-
-  setValue(explicitValue: number): void {
-
-    this.setValueAndOrigin(explicitValue, ValueOriginType.EXPLICIT);
+    return this.setValueAndOrigin(explicitValue, ValueOriginType.EXPLICIT);
 
   }
 
@@ -83,16 +78,7 @@ export class Cell {
     return this.options.includes(value);
   }
 
-  unsetValue(): void {
-
-    if (this.valueOrigin === ValueOriginType.DERIVED) {
-      throw new UnsupportedOperation('A cell with a DERIVED value cannot be unset');
-    }
-
-    this._unsetValue();
-  }
-
-  setValueAndOrigin(explicitValue: number, valueOrigin: ValueOriginType): void {
+  setValueAndOrigin(explicitValue: number, valueOrigin: ValueOriginType): Observable<any> {
 
     // Validate that the value was an available option.
     if (!this.canSetValue(explicitValue)) {
@@ -104,26 +90,13 @@ export class Cell {
     this.valueOrigin = valueOrigin;
     this.emitValueSet(this.value, this.valueOrigin);
 
+
     const newOptions = this.options.filter(value => value === explicitValue);
     if (newOptions.toString() !== this.options.toString()) {
       this.options = newOptions;
     }
 
-  }
-
-  private _unsetValue(): void {
-    if (!this.value) {
-      return;
-    }
-
-    const unsetEvent: CellStatus = {complete: false, value: this.value, valueEvent: ValueOriginType.UNSET};
-    if (!this.options.includes(this.value)) {
-      this.options.push(this.value);
-    }
-    this.value = null;
-    this.valueOrigin = null;
-
-    this.cellStatus$.next(unsetEvent);
+    return combineLatest(this.cellContainers.map(cellContainer => cellContainer.removeOption(this.value, this))).pipe(last());
   }
 
   private emitValueSet(value: number, valueEvent: ValueOriginType) {

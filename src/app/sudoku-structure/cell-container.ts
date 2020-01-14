@@ -9,11 +9,12 @@ export class CellContainer {
   private containerSolved$: Subject<boolean> = new BehaviorSubject(false);
 
   constructor(public cells: Cell[]) {
+    cells.forEach(cell => cell.registerCellContainer(this));
 
-    cells.forEach(cell => {
-      subscribeToValueSetEvent(cell, cells);
-      subscribeToOptionsChangeEvent(cell, cells);
-    });
+    // cells.forEach(cell => {
+    //   subscribeToValueSetEvent(cell, cells);
+    //   subscribeToOptionsChangeEvent(cell, cells);
+    // });
 
     // Emit Event when all cells are complete.
     combineLatest(cells.map(cell => cell.cellStatus)).subscribe((values: CellStatus[]) => {
@@ -26,6 +27,14 @@ export class CellContainer {
         this.containerSolved$.next(false);
       }
     });
+  }
+
+  removeOption(value: number, originatingCell: Cell): Observable<any> {
+    console.log(`Removing option value ${value}` )
+    return combineLatest(this.cells
+      .filter(cell => cell !== originatingCell)
+      .map(cell => cell.eliminateOption(value))
+    );
   }
 
   public get containerSolvedEvent(): Observable<boolean> {
@@ -44,13 +53,6 @@ function changeOtherCellOptions(status: CellStatus, otherCells: Cell[]) {
     otherCells.forEach(otherCell => {
       otherCell.eliminateOption(status.value);
     });
-  } else {
-    if (status.valueEvent === ValueOriginType.UNSET) {
-      // console.log('Notifying cells of re-added option', status);
-      otherCells.forEach(otherCell => {
-        otherCell.addOption(status.value);
-      });
-    }
   }
 }
 

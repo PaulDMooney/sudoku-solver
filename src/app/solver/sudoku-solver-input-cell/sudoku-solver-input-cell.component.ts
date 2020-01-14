@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Cell, ValueOriginType, CellStatus } from '@app/sudoku-structure/cell';
 import { FormControl, ValidationErrors } from '@angular/forms';
-import { bindCallback } from 'rxjs';
 
 @Component({
   selector: 'app-sudoku-solver-input-cell',
@@ -61,13 +60,13 @@ export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
         }
 
         if (!newValue || !newValue.trim()) {
-          this.cell.unsetValue();
+          // this.cell.unsetValue();
           return;
         }
 
         const numberValue = parseValue(newValue);
         console.log('newValue', newValue, numberValue);
-        this.cell.setValue(numberValue);
+        this.cell.setValue(numberValue).subscribe(() => console.log('done setting value'));
       });
     }
   }
