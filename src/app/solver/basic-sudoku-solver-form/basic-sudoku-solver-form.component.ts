@@ -1,7 +1,8 @@
-import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges, Output, EventEmitter, ViewChildren, QueryList } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Board } from '@app/sudoku-structure/board';
 import { Cell } from '@app/sudoku-structure/cell';
+import { SudokuSolverInputCellComponent } from '../sudoku-solver-input-cell/sudoku-solver-input-cell.component';
 
 @Component({
   selector: 'app-basic-solver-form',
@@ -12,7 +13,9 @@ export class BasicSudokuSolverFormComponent implements OnInit, OnChanges {
 
   @Input() board: Board;
 
-  cellInputGrid: FormControl[][];
+  @Output() boardInputsChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+  @ViewChildren(SudokuSolverInputCellComponent) sudokuSolverInputs: QueryList<SudokuSolverInputCellComponent>;
 
   constructor() { }
 
@@ -25,19 +28,20 @@ export class BasicSudokuSolverFormComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.cellInputGrid = createCellInputsForGrid(this.board.grid);
-
   }
 
   kick() {
     this.board.pantsKicker$.next(true);
   }
 
-}
+  resetBoard(event:any, rowNumber: number, columnNumber: number ) {
+    this.boardInputsChanged.emit(true);
+  }
 
-function createCellInputsForGrid(grid: Cell[][]): FormControl[][] {
+  reapplyValues() {
+    this.sudokuSolverInputs.forEach(input => {
+      input.reApplyValue();
+    });
+  }
 
-  return grid.map( (column: Cell[]) => column.map((cell: Cell) => {
-    return new FormControl();
-  }));
 }

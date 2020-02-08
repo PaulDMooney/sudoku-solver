@@ -2,7 +2,8 @@
   <div *ngFor="let row of board?.grid; let rowNumber = index" class="row">
 
     <span *ngFor="let cell of row; let columnNumber = index" class="cell">
-      <app-sudoku-solver-input-cell [cell]="cell" [cellRow]="rowNumber" [cellColumn]="columnNumber"></app-sudoku-solver-input-cell>
+      <app-sudoku-solver-input-cell [cell]="cell" [cellRow]="rowNumber" [cellColumn]="columnNumber"
+      (valueChanged)="resetBoard($event,rowNumber, columnNumber)"></app-sudoku-solver-input-cell>
     </span>
   </div>
   <button (click)="kick()">Kick</button>

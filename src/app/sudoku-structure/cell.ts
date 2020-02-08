@@ -23,9 +23,9 @@ export class Cell {
 
   private options: number[];
 
-  private cellStatus$: Subject<CellStatus> = new BehaviorSubject({complete: false});
+  private cellStatus$: Subject<CellStatus>;
 
-  private optionsChangeTrigger$: Subject<number[]> = new Subject();
+  private optionsChangeTrigger$: Subject<number[]> ;
 
   private value?: number;
 
@@ -33,8 +33,8 @@ export class Cell {
 
   private cellContainers: CellContainer[] = [];
 
-  constructor(allOptions: number[] = DEFAULT_STARTING_OPTIONS) {
-    this.options = [...allOptions];
+  constructor(private allOptions: number[] = DEFAULT_STARTING_OPTIONS) {
+    this.reset();
   }
 
   get currentValue(): number {
@@ -43,6 +43,14 @@ export class Cell {
 
   get currentOptions(): number[] {
     return this.options;
+  }
+
+  reset() {
+    this.options = [...this.allOptions];
+    this.value = null;
+    this.valueOrigin = null;
+    this.cellStatus$ = new BehaviorSubject({complete: false});
+    this.optionsChangeTrigger$ = new Subject();
   }
 
   registerCellContainer(cellContainer: CellContainer) {
@@ -96,7 +104,9 @@ export class Cell {
       this.options = newOptions;
     }
 
-    return combineLatest(this.cellContainers.map(cellContainer => cellContainer.removeOption(this.value, this))).pipe(last());
+    return combineLatest(
+      this.cellContainers.map(cellContainer => cellContainer.removeOption(this.value, this))
+    ).pipe(last());
   }
 
   private emitValueSet(value: number, valueEvent: ValueOriginType) {

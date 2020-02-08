@@ -3,10 +3,13 @@ import { ReplaySubject, Observable, Subject, forkJoin, combineLatest, BehaviorSu
 import { Cell } from './cell';
 import { Square } from './square';
 import { transposeGrid } from './transpose-grid';
+import { takeUntil } from 'rxjs/operators';
 
 export class Board {
 
   boardSolved$: Subject<boolean> = new BehaviorSubject(false);
+
+  reset$: Subject<boolean> = new Subject();
 
   /**
    *
@@ -16,7 +19,12 @@ export class Board {
    */
   constructor(private cellContainers: CellContainer[], public grid: Cell[][], public pantsKicker$: Subject<any>) {
 
+    this.subscribeToContainerSolvedEvent(cellContainers);
+  }
+
+  private subscribeToContainerSolvedEvent(cellContainers: CellContainer[]) {
     combineLatest(cellContainers.map(cellContainer => cellContainer.containerSolvedEvent))
+      .pipe(takeUntil(this.reset$))
       .subscribe((statuses: boolean[]) => {
 
         const boardStatus = statuses.filter(status => !status).length === 0;
@@ -26,6 +34,13 @@ export class Board {
 
   get boardSolved(): Observable<boolean> {
     return this.boardSolved$;
+  }
+
+  reset() {
+    this.grid.forEach(row => row.forEach((cell: Cell) => cell.reset()));
+    this.cellContainers.forEach(cellContainer => cellContainer.reset());
+    this.reset$.next(true);
+    this.subscribeToContainerSolvedEvent(this.cellContainers);
   }
 }
 

@@ -1,12 +1,14 @@
 import { Cell, CellStatus, ValueOriginType } from './cell';
 import { Subject, ReplaySubject, forkJoin, Observable, combineLatest, BehaviorSubject } from 'rxjs';
-import { bufferToggle, mergeAll, buffer, concatAll, timeout, combineAll } from 'rxjs/operators';
+import { bufferToggle, mergeAll, buffer, concatAll, timeout, combineAll, takeUntil } from 'rxjs/operators';
 import { matchCellsWithLikeOptions } from './match-cells';
 import { deriveCellsWithUniqueOptions } from './derive-cells';
 
 export class CellContainer {
 
   private containerSolved$: Subject<boolean> = new BehaviorSubject(false);
+
+  private reset$: Subject<boolean> = new Subject();
 
   constructor(public cells: Cell[]) {
     cells.forEach(cell => cell.registerCellContainer(this));
@@ -17,7 +19,13 @@ export class CellContainer {
     // });
 
     // Emit Event when all cells are complete.
-    combineLatest(cells.map(cell => cell.cellStatus)).subscribe((values: CellStatus[]) => {
+    this.subscribeToCellStatus(cells);
+  }
+
+  private subscribeToCellStatus(cells: Cell[]) {
+    combineLatest(cells.map(cell => cell.cellStatus))
+    .pipe(takeUntil(this.reset$))
+    .subscribe((values: CellStatus[]) => {
 
       if (values.filter((status: CellStatus) => !status.complete).length === 0) {
 
@@ -39,6 +47,11 @@ export class CellContainer {
 
   public get containerSolvedEvent(): Observable<boolean> {
     return this.containerSolved$;
+  }
+
+  reset(): void {
+    this.reset$.next(true);
+    this.subscribeToCellStatus(this.cells);
   }
 }
 
