@@ -61,11 +61,6 @@ export class CellContainer {
   }
 }
 
-function subscribeToValueSetEvent(cell: Cell, allCells: Cell[]) {
-  const otherCells = allCells.filter(value => value !== cell);
-  cell.cellStatus.subscribe(status => changeOtherCellOptions(status, otherCells));
-}
-
 function changeOtherCellOptions(status: CellStatus, otherCells: Cell[]) {
   if (status.complete) {
     // console.log('Notifying cells of final value set', status);
@@ -75,14 +70,6 @@ function changeOtherCellOptions(status: CellStatus, otherCells: Cell[]) {
   }
 }
 
-// TODO: Need to reverse this behaviour so it returns an observable.
-function subscribeToOptionsChangeEvent(cell: Cell, allCells: Cell[]) {
-
-  cell.optionsChange.subscribe(() => {
-    matchCellsWithLikeOptions(allCells);
-    deriveCellsWithUniqueOptions(allCells);
-  });
-}
 
 function onOptionsChange(cell: Cell, allCells: Cell[]): Observable<any> {
 

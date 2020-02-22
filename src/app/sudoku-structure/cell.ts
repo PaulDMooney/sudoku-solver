@@ -15,10 +15,6 @@ export enum ValueOriginType {
   DERIVED
 }
 
-export enum ValueChangeType {
-  SET,
-  UNSET
-}
 export class Cell {
 
   private options: number[];
