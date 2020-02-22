@@ -1,6 +1,6 @@
 import { Cell, CellStatus, ValueOriginType } from './cell';
 import { Subject, ReplaySubject, forkJoin, Observable, combineLatest, BehaviorSubject } from 'rxjs';
-import { bufferToggle, mergeAll, buffer, concatAll, timeout, combineAll, takeUntil } from 'rxjs/operators';
+import { bufferToggle, mergeAll, buffer, concatAll, timeout, combineAll, takeUntil, map, flatMap, last, takeLast } from 'rxjs/operators';
 import { matchCellsWithLikeOptions } from './match-cells';
 import { deriveCellsWithUniqueOptions } from './derive-cells';
 
@@ -42,7 +42,13 @@ export class CellContainer {
     return combineLatest(this.cells
       .filter(cell => cell !== originatingCell)
       .map(cell => cell.eliminateOption(value))
+    ).pipe(
+      last()
     );
+  }
+
+  optionsChanged(value: number, originatingCell: Cell): Observable<any> {
+    return onOptionsChange(originatingCell, this.cells);
   }
 
   public get containerSolvedEvent(): Observable<boolean> {
@@ -69,10 +75,19 @@ function changeOtherCellOptions(status: CellStatus, otherCells: Cell[]) {
   }
 }
 
+// TODO: Need to reverse this behaviour so it returns an observable.
 function subscribeToOptionsChangeEvent(cell: Cell, allCells: Cell[]) {
 
   cell.optionsChange.subscribe(() => {
     matchCellsWithLikeOptions(allCells);
     deriveCellsWithUniqueOptions(allCells);
   });
+}
+
+function onOptionsChange(cell: Cell, allCells: Cell[]): Observable<any> {
+
+    const matchCells = forkJoin(matchCellsWithLikeOptions(allCells));
+    const derivedCells = forkJoin(deriveCellsWithUniqueOptions(allCells));
+    return forkJoin(matchCells, derivedCells);
+
 }

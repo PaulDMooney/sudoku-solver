@@ -1,4 +1,4 @@
-import { Observable, Subject, ReplaySubject, BehaviorSubject, empty, combineLatest, of } from 'rxjs';
+import { Observable, Subject, ReplaySubject, BehaviorSubject, empty, combineLatest, of, forkJoin } from 'rxjs';
 import { skip, filter, throttle, last } from 'rxjs/operators';
 import { CellContainer } from './cell-container';
 
@@ -73,7 +73,7 @@ export class Cell {
       return this.setValueAndOrigin(this.options[0], ValueOriginType.DERIVED);
     }
     this.optionsChangeTrigger$.next(this.options);
-    return of(true);
+    return forkJoin(this.cellContainers.map(cellContainer => cellContainer.optionsChanged(option, this)));
   }
 
   setValue(explicitValue: number): Observable<any> {
