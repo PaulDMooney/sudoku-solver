@@ -1,18 +1,21 @@
 import { Cell } from './cell';
+import { Observable } from 'rxjs';
 
-export function matchCellsWithLikeOptions(allCells: Cell[]) {
+export function matchCellsWithLikeOptions(allCells: Cell[]): Array<Observable<any>> {
   const unsolvedCells = allCells.filter(value => !value.currentValue);
   const allCellsByOptionsMap = mapCellsByOptions(unsolvedCells);
   const cellsWithLikeOptions = extractGroupsOfMatchingOptions(allCellsByOptionsMap.values());
+  const toReturn: Observable<any>[] = [];
   cellsWithLikeOptions.forEach(likeCells => {
     const options = likeCells[0].currentOptions;
     const otherCells = unsolvedCells.filter(value => !likeCells.includes(value));
     otherCells.forEach(otherCell => {
       options.forEach(option => {
-        otherCell.eliminateOption(option);
+        toReturn.push(otherCell.eliminateOption(option));
       });
     });
   });
+  return toReturn;
 }
 
 function mapCellsByOptions(cells: Cell[]) {

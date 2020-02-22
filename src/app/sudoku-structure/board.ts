@@ -1,14 +1,30 @@
 import { CellContainer } from './cell-container';
 import { ReplaySubject, Observable, Subject, forkJoin, combineLatest, BehaviorSubject } from 'rxjs';
 import { Cell } from './cell';
+import { Square } from './square';
+import { transposeGrid } from './transpose-grid';
+import { takeUntil } from 'rxjs/operators';
 
 export class Board {
 
   boardSolved$: Subject<boolean> = new BehaviorSubject(false);
 
-  constructor(private cellContainers: CellContainer[], public grid: Cell[][]) {
+  reset$: Subject<boolean> = new Subject();
 
+  /**
+   *
+   * @param cellContainers
+   * @param grid 2D array of cells representing the grid. The first dimension is rows,
+   * The second dimension is columns.
+   */
+  constructor(private cellContainers: CellContainer[], public grid: Cell[][], public pantsKicker$: Subject<any>) {
+
+    this.subscribeToContainerSolvedEvent(cellContainers);
+  }
+
+  private subscribeToContainerSolvedEvent(cellContainers: CellContainer[]) {
     combineLatest(cellContainers.map(cellContainer => cellContainer.containerSolvedEvent))
+      .pipe(takeUntil(this.reset$))
       .subscribe((statuses: boolean[]) => {
 
         const boardStatus = statuses.filter(status => !status).length === 0;
@@ -18,6 +34,13 @@ export class Board {
 
   get boardSolved(): Observable<boolean> {
     return this.boardSolved$;
+  }
+
+  reset() {
+    this.grid.forEach(row => row.forEach((cell: Cell) => cell.reset()));
+    this.cellContainers.forEach(cellContainer => cellContainer.reset());
+    this.reset$.next(true);
+    this.subscribeToContainerSolvedEvent(this.cellContainers);
   }
 }
 
@@ -38,51 +61,50 @@ export function boardFactory(squareSize: number = 3): Board {
     }
   }
 
+  const pantsKicker$ = new Subject<any>();
   const rows = createCellContainersFromRows(grid);
   const columns = createCellContainersFromColumns(grid);
-  const squares = createCellContainersFromSquares(grid, squareSize);
+  const squares = createCellContainersFromSquares(grid, squareSize, rows, columns, pantsKicker$);
 
-  const toReturn = new Board([...rows, ...columns, ...squares], grid);
+  const toReturn = new Board([...rows, ...columns, ...squares], grid, pantsKicker$);
   return toReturn;
-}
-
-function createCellContainersFromColumns(grid: Cell[][]): CellContainer[] {
-  return grid.map((column: Cell[]) => new CellContainer(column));
 }
 
 function createCellContainersFromRows(grid: Cell[][]): CellContainer[] {
-  const toReturn = [];
-  for (let i = 0; i < grid.length; i++) {
-    const row = [];
-    for (let j = 0; j < grid[i].length; j++) {
-      row.push(grid[j][i]);
-    }
-    toReturn.push(new CellContainer(row));
-  }
-  return toReturn;
+  return grid.map((row: Cell[]) => new CellContainer(row));
 }
 
-function createCellContainersFromSquares(grid: Cell[][], squareSize: number): CellContainer[] {
+function createCellContainersFromColumns(grid: Cell[][]): CellContainer[] {
+  const transposedGrid = transposeGrid(grid);
+  return createCellContainersFromRows(transposedGrid);
+}
+
+function createCellContainersFromSquares(grid: Cell[][], squareSize: number, rows:CellContainer[], columns: CellContainer[], pantsKicker$: Observable<any>): Square[] {
 
   const toReturn = [];
 
-  for (let xSquares = 0; xSquares < squareSize; xSquares++) {
-    for (let ySquares = 0; ySquares < squareSize; ySquares++) {
-      const cells = getSquare(grid, xSquares, ySquares, squareSize);
-      toReturn.push(new CellContainer(cells));
+  for (let rowGroup = 0; rowGroup < squareSize; rowGroup++) {
+    const overlappingRows = rows.slice(rowGroup * squareSize, rowGroup * squareSize + squareSize).map(row => [row]);
+    for (let columnGroup = 0; columnGroup < squareSize; columnGroup++) {
+      const cells = getSquare(grid, rowGroup, columnGroup, squareSize);
+      const overlappingColumns = columns.slice(columnGroup * squareSize, columnGroup * squareSize + squareSize).map(column => [column]);
+      toReturn.push(new Square(cells, overlappingRows, overlappingColumns, pantsKicker$));
     }
   }
 
   return toReturn;
 }
 
-function getSquare(grid: Cell[][], xSquare: number, ySquare: number, squareSize: number): Cell[] {
+function getSquare(grid: Cell[][], rowGroup: number, columnGroup: number, squareSize: number): Cell[][] {
 
-  const cells = [];
-  for (let i = xSquare * squareSize; i < xSquare * squareSize + squareSize; i++) {
-    for (let j = ySquare * squareSize; j < ySquare * squareSize + squareSize; j++) {
-      cells.push(grid[i][j]);
+  const squareGrid: Cell[][] = [];
+  for (let squareRow = 0; squareRow < squareSize; squareRow++) {
+    const row = rowGroup * squareSize + squareRow;
+    squareGrid.push([]);
+    for (let squareColumn = 0; squareColumn < squareSize; squareColumn++) {
+      const column = columnGroup * squareSize + squareColumn;
+      squareGrid[squareRow].push(grid[row][column]);
     }
   }
-  return cells;
+  return squareGrid;
 }

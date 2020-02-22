@@ -1,8 +1,10 @@
 import { Cell, ValueOriginType } from './cell';
+import { Observable } from 'rxjs';
 
-export function deriveCellsWithUniqueOptions(allCells: Cell[]) {
+export function deriveCellsWithUniqueOptions(allCells: Cell[]): Array<Observable<any>> {
   const unsolvedCells = allCells.filter(value => !value.currentValue);
   const allCellsByOptionValueMap = mapCellsByOptionValue(unsolvedCells);
+  const toReturn = []
   for (const entry of allCellsByOptionValueMap.entries()) {
     if (entry[1].length === 1) {
       const derivedValue = entry[0];
@@ -10,10 +12,11 @@ export function deriveCellsWithUniqueOptions(allCells: Cell[]) {
 
       if (!cellToComplete.currentValue && !allCells.find(cell => cell.currentValue === derivedValue)) {
         console.log('unique value found', derivedValue);
-        cellToComplete.setValueAndOrigin(entry[0], ValueOriginType.DERIVED);
+        toReturn.push(cellToComplete.setValueAndOrigin(entry[0], ValueOriginType.DERIVED));
       }
     }
   }
+  return toReturn;
 
 }
 
