@@ -89,38 +89,6 @@ describe('Cell', () => {
     });
   });
 
-  it('should cause cells with DERIVED values to report not complete and previous value', async (done) => {
-
-    // Given
-    const simpleCell = new Cell([1, 2]);
-    simpleCell.eliminateOption(2); // Will have derived value of 1
-
-    // When
-    simpleCell.addOption(2);
-
-    // Then
-    const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
-
-    expect(result).toEqual({complete: false, value: 1});
-    done();
-  });
-
-  it('should not cause a change in event for cells with EXPLICIT values', async (done) => {
-
-    // Given
-    const simpleCell = new Cell([1, 2]);
-    simpleCell.setValue(2);
-
-    // When
-    simpleCell.addOption(1);
-
-    // Then
-    const result = await simpleCell.cellStatus.pipe(take(1)).toPromise();
-
-    expect(result).toEqual({complete: true, value: 2, valueEvent: ValueOriginType.EXPLICIT});
-    done();
-  });
-
   describe('canSetValue', () => {
 
     it('should return true if a value is in list of available options', () => {

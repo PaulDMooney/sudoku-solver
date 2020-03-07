@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { Cell, ValueOriginType, CellStatus } from '@app/sudoku-structure/cell';
 import { FormControl, ValidationErrors, Form } from '@angular/forms';
+import * as isString from 'is-string';
 
 
 export interface RowColumnPair {
@@ -80,7 +81,7 @@ export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
         return;
       }
 
-      if (!newValue || !newValue.trim()) {
+      if (isBlankValue(newValue)) {
         return;
       }
 
@@ -92,7 +93,7 @@ export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
   }
 
   public reApplyValue() {
-    if (this.formControl.dirty && this.formControl.valid && !isBlankValue(this.formControl)) {
+    if (this.formControl.dirty && this.formControl.valid && !isBlankValue(this.formControl.value)) {
       this.cell.setValue(parseValue(this.formControl.value));
     }
   }
@@ -102,7 +103,7 @@ export class SudokuSolverInputCellComponent implements OnInit, OnChanges {
 function createValidator(cell: Cell) {
   return (control: FormControl): ValidationErrors => {
 
-    if (isBlankValue(control)) {
+    if (isBlankValue(control.value)) {
       return null;
     }
 
@@ -113,8 +114,16 @@ function createValidator(cell: Cell) {
   }
 }
 
-function isBlankValue(control: FormControl) {
-  return !control.value || !control.value.trim();
+function isBlankValue(value: any): boolean {
+
+  // TODO: Fix this, make more general function for checking nulls, undefined, or empty strings only. No false or 0 to fail truthiness
+  if (!value) {
+    return true
+  }
+  if (isString(value)) {
+    return !value.trim();
+  }
+  return false;
 }
 
 function parseValue(value): number {
