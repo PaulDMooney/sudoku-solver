@@ -15,6 +15,7 @@ export class Board {
    *
    * @param cellContainers
    * @param grid 2D array of cells representing the grid. The first dimension is rows,
+   * @param pantsKicker a subject that helps move stuck containers. TODO: Remove this concept.
    * The second dimension is columns.
    */
   constructor(private cellContainers: CellContainer[], public grid: Cell[][], public pantsKicker$: Subject<any>) {

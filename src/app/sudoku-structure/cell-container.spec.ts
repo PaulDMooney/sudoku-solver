@@ -39,26 +39,6 @@ describe('CellContainer', () => {
 
   });
 
-  it('should emit container solved event of false when a cell is unset', async (done) => {
-
-    // Given
-    const cellOptions = [1, 2, 3, 4];
-    const cells = cellOptions.map(() => new Cell(cellOptions));
-    const cellContainer = new CellContainer(cells);
-    cells[0].setValue(cellOptions[0]);
-    cells[1].setValue(cellOptions[1]);
-    cells[2].setValue(cellOptions[2]); // At this point the container is solved.
-
-    // When
-    cells[0].unsetValue();
-
-    const result = await cellContainer.containerSolvedEvent.pipe(take(1)).toPromise();
-
-    // Then
-    expect(result).toBe(false);
-    done();
-  });
-
   it('should throw an error if two cells have the same value attempted', () => {
 
     // Given
@@ -100,23 +80,6 @@ describe('CellContainer', () => {
 
     // Then
     expect(cell1Spy).not.toHaveBeenCalledWith(setValue);
-  });
-
-  it('should notify cells of options made available to the container again', () => {
-
-    // Given
-    const cell1 = new Cell();
-    const cell2 = new Cell();
-    const cell2Spy = jest.spyOn(cell2, 'addOption');
-    const cellContainer = new CellContainer([cell1, cell2]);
-    const setValue = 4;
-    cell1.setValue(setValue);
-
-    // When
-    cell1.unsetValue();
-
-    // Then
-    expect(cell2Spy).toHaveBeenCalledWith(setValue);
   });
 
   it('should find cells with matching options and eliminate those options from other cells', () => {
